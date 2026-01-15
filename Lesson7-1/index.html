@@ -22,7 +22,6 @@
 <!-- Quiz Screen -->
 <div id="quizScreen" class="hidden">
 
-  <!-- Stats Panel -->
   <div id="statsPanel">
     <div class="level-section">
       <strong>Level: <span id="level">1</span></strong>
@@ -40,11 +39,9 @@
     </div>
   </div>
 
-  <!-- Question -->
-  <div id="jpText">月曜日</div>
+  <div id="jpText"></div>
   <div id="enText"></div>
 
-  <!-- Input -->
   <input
     type="text"
     id="answerInput"
@@ -53,8 +50,16 @@
   />
 
   <div id="feedback"></div>
-
-  <!-- Choices (optional use) -->
   <div id="choicesText"></div>
 
-  <!-
+  <button id="nextBtn" disabled>Next</button>
+  <button id="tryAgainBtn" class="hidden">Try Again</button>
+</div>
+
+<canvas id="confettiCanvas"></canvas>
+
+<!-- ✅ CORRECT SCRIPT LINK -->
+<script src="script.js"></script>
+
+</body>
+</html>
