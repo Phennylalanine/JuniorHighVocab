@@ -1,0 +1,227 @@
+/* =========================
+   Visibility Helpers
+   ========================= */
+.hidden { display: none; }
+.active { display: flex; }
+
+/* =========================
+   Page Reset & Base
+   ========================= */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+  background: radial-gradient(circle at top, #eef2ff, #e0e7ff);
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================
+   Main Screen Containers
+   ========================= */
+#startScreen,
+#quizScreen {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 1.8rem 1.6rem;
+  box-shadow: 0 20px 40px rgba(79, 70, 229, 0.25);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================
+   Start Screen
+   ========================= */
+#startBtn {
+  margin-top: 1rem;
+}
+
+/* =========================
+   Question Text
+   ========================= */
+#jpText {
+  font-size: 1.35em;
+  font-weight: bold;
+  color: #4f46e5;
+  margin-bottom: 0.4em;
+  text-align: center;
+}
+
+#enText {
+  font-size: 1.25em;
+  font-weight: bold;
+  color: #1e293b;
+  margin-bottom: 1em;
+  text-align: center;
+  user-select: none;
+}
+
+/* =========================
+   Input
+   ========================= */
+#answerInput {
+  width: 90%;
+  max-width: 240px;
+  padding: 12px 14px;
+  font-size: 1.05em;
+  border-radius: 14px;
+  border: 2px solid #c7d2fe;
+  text-align: center;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+#answerInput:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+  outline: none;
+}
+
+/* =========================
+   Feedback
+   ========================= */
+#feedback {
+  margin-top: 0.7em;
+  font-size: 1.4em;
+  min-height: 1.5em;
+}
+
+/* =========================
+   Buttons
+   ========================= */
+button {
+  font-family: inherit;
+}
+
+#startBtn,
+#nextBtn,
+#tryAgainBtn {
+  margin-top: 0.8em;
+  padding: 10px 22px;
+  font-size: 1em;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+#startBtn,
+#nextBtn {
+  background: linear-gradient(90deg, #4f46e5, #6366f1);
+  color: white;
+  box-shadow: 0 6px 14px rgba(79, 70, 229, 0.35);
+}
+
+#nextBtn:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+  cursor: default;
+}
+
+#tryAgainBtn {
+  background: linear-gradient(90deg, #ef4444, #f97316);
+  color: white;
+  box-shadow: 0 6px 14px rgba(239, 68, 68, 0.35);
+}
+
+#startBtn:hover,
+#nextBtn:hover:not(:disabled),
+#tryAgainBtn:hover {
+  transform: translateY(-2px);
+}
+
+/* =========================
+   Stats Panel
+   ========================= */
+#statsPanel {
+  width: 100%;
+  margin-bottom: 1em;
+  font-size: 0.95em;
+  color: #475569;
+  text-align: center;
+}
+
+#statsPanel strong {
+  color: #1e293b;
+}
+
+/* =========================
+   Level Section
+   ========================= */
+.level-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 0.6em;
+}
+
+/* =========================
+   XP Bar
+   ========================= */
+#xpBarContainer {
+  width: 180px;
+  height: 14px;
+  background: #e0e7ff;
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#xpBar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #22c55e, #4ade80);
+  transition: width 0.4s ease;
+}
+
+#xpText {
+  margin-top: 4px;
+  font-size: 0.85em;
+  color: #166534;
+  font-weight: bold;
+}
+
+/* =========================
+   Choices (if used)
+   ========================= */
+#choicesText {
+  margin: 1em 0;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.choice-option {
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  border: 2px solid #c7d2fe;
+  font-size: 0.95em;
+  cursor: default;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+.choice-option:hover {
+  background: #e0e7ff;
+}
+
+/* =========================
+   Responsive
+   ========================= */
+@media (max-width: 500px) {
+  #startScreen,
+  #quizScreen {
+    max-width: 95vw;
+    padding: 1.5rem 1.2rem;
+  }
+}
