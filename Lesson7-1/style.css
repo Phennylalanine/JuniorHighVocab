@@ -22,15 +22,21 @@ body {
   background: radial-gradient(circle at top, #eef2ff, #e0e7ff);
   color: #1e293b;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.page-title {
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+  color: #4f46e5;
 }
 
 /* =========================
    Screens
    ========================= */
-#startScreen,
-#quizScreen {
+.screen {
   width: 100%;
   max-width: 420px;
   background: #ffffff;
@@ -43,19 +49,9 @@ body {
 }
 
 /* =========================
-   Title
-   ========================= */
-.title {
-  margin-bottom: 1.2rem;
-  font-size: 1.8rem;
-  color: #4f46e5;
-}
-
-/* =========================
    Buttons
    ========================= */
 button {
-  font-family: inherit;
   border: none;
   border-radius: 999px;
   padding: 12px 26px;
@@ -74,8 +70,8 @@ button {
 
 #nextBtn:disabled {
   opacity: 0.5;
-  cursor: default;
   box-shadow: none;
+  cursor: default;
 }
 
 #tryAgainBtn {
@@ -94,12 +90,53 @@ button:hover:not(:disabled) {
    ========================= */
 #statsPanel {
   width: 100%;
-  margin-bottom: 1.2rem;
-  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
   color: #475569;
 }
 
-.level-section {
-  display: flex;
-  flex-direction: column;
-  a
+#xpBarContainer {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 6px 0;
+}
+
+#xpBar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #4f46e5, #6366f1);
+}
+
+/* =========================
+   Inputs
+   ========================= */
+input {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: 1px solid #c7d2fe;
+  margin: 0.6rem 0;
+}
+
+/* =========================
+   Confetti
+   ========================= */
+#confettiCanvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* =========================
+   Footer
+   ========================= */
+footer {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
