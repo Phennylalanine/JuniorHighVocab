@@ -4,58 +4,64 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Lesson 7 - 1</title>
-  <link rel="stylesheet" href="style.css"> <!-- ✅ Link to external CSS -->
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<h1>建物クイズ</h1>
+<h1 class="page-title">建物クイズ</h1>
 
 <!-- Start Screen -->
-<div id="startScreen" class="active">
+<div id="startScreen" class="screen active">
   <button id="startBtn">Start Quiz</button>
 </div>
 
 <!-- Quiz Screen -->
-<div id="quizScreen" class="hidden">
-  <!-- Stats Panel (Level, XP bar, score, combo) -->
+<div id="quizScreen" class="screen hidden">
+  <!-- Stats Panel -->
   <div id="statsPanel">
     <div class="level-section">
       <div>
         <strong>Level:</strong> <span id="level">1</span>
       </div>
-      <div id="xpBarContainer" aria-label="Experience Progress Bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+
+      <div id="xpBarContainer">
         <div id="xpBar"></div>
       </div>
+
       <small id="xpText">0 / 10 XP</small>
     </div>
+
     <div>
       <strong>Score:</strong> <span id="points">0</span> |
       <strong>Combo:</strong> <span id="combo">0</span>
     </div>
   </div>
 
-  <!-- Question Text -->
-  <div id="jpText">月曜日</div>
+  <div id="jpText"></div>
   <div id="enText"></div>
 
-  <!-- Answer Input -->
-  <input type="text" id="answerInput" autocomplete="off" placeholder="Type the correct English" />
+  <input
+    type="text"
+    id="answerInput"
+    autocomplete="off"
+    placeholder="Type the correct English"
+  />
+
   <div id="feedback"></div>
 
-  <!-- Choices -->
   <div id="choicesText"></div>
 
-  <!-- Buttons -->
   <button id="nextBtn" disabled>Next</button>
   <button id="tryAgainBtn" style="display:none;">Try Again</button>
 </div>
 
-<canvas id="confettiCanvas" style="position:fixed; top:0; left:0; pointer-events:none; z-index:1000;"></canvas>
+<canvas id="confettiCanvas"></canvas>
 
-<script src="script.js"></script>
-  <footer style="text-align: center; margin-top: 40px; font-size: 0.9em; color: #888;">
+<footer>
   © 2024–2025 Created by Peter Gregory
 </footer>
+
+<script src="script.js"></script>
 </body>
 </html>
