@@ -123,7 +123,7 @@ window.addEventListener("DOMContentLoaded", () => {
     currentQuestion = questions[Math.floor(Math.random() * questions.length)];
 
     jpText.textContent = currentQuestion.jp;
-    enText.textContent = "";
+    enText.textContent = currentQuestion.en;
     answerInput.value = "";
     answerInput.disabled = false;
     answerInput.focus();
