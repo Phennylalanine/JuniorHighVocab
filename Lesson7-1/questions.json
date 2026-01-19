@@ -5,7 +5,7 @@
   "questions": [
     { "id": 1, "jp": "seeの過去分詞", "en": "seen" },
     { "id": 2, "jp": "飾り（つけ）", "en": "leaf" },
-    { "id": 3, "jp": "中国人", "en": "leaves" },
+    { "id": 3, "jp": "中国人", "en": "Chinese" },
     { "id": 4, "jp": "庭", "en": "garden" },
     { "id": 5, "jp": "光", "en": "light" },
     { "id": 6, "jp": "空港", "en": "airport" },
@@ -16,5 +16,6 @@
     { "id": 11, "jp": "晴れ", "en": "sunny" },
     { "id": 12, "jp": "市, 都市", "en": "city" }
   ]
+
 
 }
