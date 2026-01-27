@@ -3,10 +3,10 @@
 const QUIZZES = [
   {
     icon: "🏛️",
-    title: "Round 1 Buildings Quiz",
-    jp: "建物クイズ 第1戦",
-    url: "https://phennylalanine.github.io/Yach-6-Quiz-Home/BuildingS",
-    levelKey: "buildingSlevelr",
+    title: "Lesson 7-1 Quiz",
+    jp: "7-1 第1戦",
+    url: "https://phennylalanine.github.io/JuniorHighVocab",
+    levelKey: "lesson7-1slevelr",
   },
   // ...
 ];
