@@ -203,7 +203,34 @@ window.addEventListener("DOMContentLoaded", () => {
 
   function saveProgress() {
     localStorage.setItem("lesson7_xp", xp);
-    localStorage.setItem("lesson7_level", level);
+    localStorage.setItem("<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quiz Hub - Total Level</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Welcome to the Quiz Hub!</h1>
+    <p id="overallLevel"></p>
+  </header>
+
+  <main>
+    <section class="quiz-grid" id="quizGrid"></section>
+  </main>
+
+  <footer>
+    <p>© 2024–2025 Created by Peter Gregory</p>
+  </footer>
+
+  <script src="js/quizCards.js"></script>
+  <script src="js/monsterHub.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
+", level);
   }
 
   function loadProgress() {
