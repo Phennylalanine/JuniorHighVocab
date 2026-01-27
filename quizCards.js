@@ -5,7 +5,7 @@ const QUIZZES = [
     icon: "🏛️",
     title: "Lesson 7-1 Quiz",
     jp: "7-1 第1戦",
-    url: "https://phennylalanine.github.io/JuniorHighVocab",
+    url: "https://phennylalanine.github.io/JuniorHighVocab/Lesson7-1/",
     levelKey: "lesson7-1sLevelr",
   },
   // ...
