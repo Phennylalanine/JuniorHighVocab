@@ -18,7 +18,7 @@ html, body {
 }
 
 body {
-  font-family: comic sans MS;
+  font-family: "Comic Sans MS", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   background: radial-gradient(circle at top, #eef2ff, #e0e7ff);
   color: #1e293b;
   display: flex;
@@ -26,22 +26,26 @@ body {
   align-items: center;
   justify-content: center;
 }
-/* =========================
-   English Japanese Text
-   ========================= */
 
+/* =========================
+   English / Japanese Text
+   ========================= */
 #enText {
-  font-size: 1.6rem;      /* slightly bigger */
-  font-weight: 600;       /* semi-bold */
-  color: #1e3a8a;         /* deeper blue */
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #1e3a8a;
   margin-top: 0.2rem;
 }
 
 #jpText {
-  font-size: 1.rem;
+  font-size: 1rem;
   color: #475569;
- font-weight: 350;
+  font-weight: 350;
 }
+
+/* =========================
+   Page Title
+   ========================= */
 .page-title {
   margin-bottom: 1rem;
   font-size: 1.8rem;
@@ -49,7 +53,7 @@ body {
 }
 
 /* =========================
-   Screens
+   Screens / Cards
    ========================= */
 .screen {
   width: 100%;
@@ -58,6 +62,7 @@ body {
   border-radius: 20px;
   padding: 2rem 1.6rem;
   box-shadow: 0 20px 40px rgba(79, 70, 229, 0.25);
+  display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
@@ -110,6 +115,9 @@ button:hover:not(:disabled) {
   color: #475569;
 }
 
+/* =========================
+   XP Bar
+   ========================= */
 #xpBarContainer {
   width: 100%;
   height: 25px;
@@ -121,8 +129,37 @@ button:hover:not(:disabled) {
 
 #xpBar {
   height: 100%;
-    width: 10%;
-    background: linear-gradient(40deg,#FCEE21, #009245 );
+  width: 10%;
+  background: linear-gradient(40deg, #FCEE21, #009245);
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 6px rgba(255,255,255,0.4);
+}
+
+/* Animated stripe overlay */
+#xpBar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.25) 0px,
+    rgba(255, 255, 255, 0.25) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+  background-size: 40px 40px;
+  animation: move 3s linear infinite;
+}
+
+/* XP animation */
+@keyframes move {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 40px 40px;
+  }
 }
 
 /* =========================
@@ -136,6 +173,17 @@ input {
   border: 1px solid #c7d2fe;
   margin: 0.6rem 0;
   text-align: center;
+}
+
+input::placeholder {
+  color: #94a3b8;
+  font-size: 1.2rem;
+}
+
+input:focus {
+  outline: none;
+  border-color: #6366f1;
+  text-align: left;
 }
 
 /* =========================
