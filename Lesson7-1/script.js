@@ -229,31 +229,42 @@ window.addEventListener("DOMContentLoaded", () => {
     speechSynthesis.speak(u);
   }
 
-  // =========================
-  // Confetti
-  // =========================
-  function triggerConfetti() {
-    for (let i = 0; i < 80; i++) {
-      confettiParticles.push({
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * -20,
-        r: Math.random() * 5 + 2,
-        d: Math.random() * 4 + 1,
-        color: `hsl(${Math.random() * 360},100%,70%)`
-      });
-    }
-  }
+ // =========================
+// Confetti
+// =========================
+function triggerConfetti() {
+  // ✅ Clear old confetti first
+  confettiParticles = [];
 
-  function drawConfetti() {
-    ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-    confettiParticles.forEach(p => {
-      ctx.beginPath();
-      ctx.fillStyle = p.color;
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fill();
-      p.y += p.d;
+  for (let i = 0; i < 80; i++) {
+    confettiParticles.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * -20,
+      r: Math.random() * 5 + 2,
+      d: Math.random() * 4 + 1,
+      color: `hsl(${Math.random() * 360},100%,70%)`
     });
   }
+
+  // ✅ Stop confetti after 1.2 seconds
+  setTimeout(() => {
+    confettiParticles = [];
+  }, 1200);
+}
+
+function drawConfetti() {
+  ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+
+  confettiParticles.forEach(p => {
+    ctx.beginPath();
+    ctx.fillStyle = p.color;
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fill();
+
+    p.y += p.d;
+  });
+}
+
 
   confettiCanvas.width = window.innerWidth;
   confettiCanvas.height = window.innerHeight;
