@@ -18,7 +18,7 @@ html, body {
 }
 
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: comic sans MS;
   background: radial-gradient(circle at top, #eef2ff, #e0e7ff);
   color: #1e293b;
   display: flex;
@@ -26,7 +26,22 @@ body {
   align-items: center;
   justify-content: center;
 }
+/* =========================
+   English Japanese Text
+   ========================= */
 
+#enText {
+  font-size: 1.6rem;      /* slightly bigger */
+  font-weight: 600;       /* semi-bold */
+  color: #1e3a8a;         /* deeper blue */
+  margin-top: 0.2rem;
+}
+
+#jpText {
+  font-size: 1.rem;
+  color: #475569;
+ font-weight: 350;
+}
 .page-title {
   margin-bottom: 1rem;
   font-size: 1.8rem;
@@ -116,10 +131,11 @@ button:hover:not(:disabled) {
 input {
   width: 100%;
   padding: 10px;
-  font-size: 1rem;
+  font-size: 1.5rem;
   border-radius: 10px;
   border: 1px solid #c7d2fe;
   margin: 0.6rem 0;
+  text-align: center;
 }
 
 /* =========================
