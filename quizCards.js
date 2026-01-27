@@ -6,7 +6,7 @@ const QUIZZES = [
     title: "Lesson 7-1 Quiz",
     jp: "7-1 第1戦",
     url: "https://phennylalanine.github.io/JuniorHighVocab",
-    levelKey: "lesson7-1slevelr",
+    levelKey: "lesson7-1sLevelr",
   },
   // ...
 ];
