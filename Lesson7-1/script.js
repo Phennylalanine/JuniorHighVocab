@@ -203,7 +203,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   function saveProgress() {
     localStorage.setItem("lesson7_xp", xp);
-    localStorage.setItem("<!DOCTYPE html>
+    localStorage.setItem("lesson7-1sLevelr", level);
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -235,7 +235,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   function loadProgress() {
     xp = Number(localStorage.getItem("lesson7_xp")) || 0;
-    level = Number(localStorage.getItem("lesson7_level")) || 1;
+    level = Number(localStorage.getItem("lesson7-1sLevelr")) || 1;
     updateStats();
   }
 
