@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Verb Practice</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1 class="page-title">動詞練習</h1>
+
+<!-- Start Screen -->
+<div id="startScreen" class="screen active">
+  <button id="startBtn">Start Quiz</button>
+</div>
+
+<!-- Quiz Screen -->
+<div id="quizScreen" class="screen hidden">
+  <!-- Stats Panel -->
+  <div id="statsPanel">
+    <div class="level-section">
+      <div>
+        <strong>Level:</strong> <span id="level">1</span>
+      </div>
+
+      <div id="xpBarContainer">
+        <div id="xpBar"></div>
+      </div>
+
+      <small id="xpText">0 / 10 XP</small>
+    </div>
+
+    <div>
+      <strong>Score:</strong> <span id="points">0</span> |
+      <strong>Combo:</strong> <span id="combo">0</span>
+    </div>
+  </div>
+
+  <div id="jpText"></div>
+  <div id="enText"></div>
+
+  <input
+    type="text"
+    id="answerInput"
+    autocomplete="off"
+    placeholder="Type the correct English"
+  />
+
+  <div id="feedback"></div>
+
+  <div id="choicesText"></div>
+
+  <button id="nextBtn" disabled>Next</button>
+  <button id="tryAgainBtn" style="display:none;">Try Again</button>
+</div>
+
+<canvas id="confettiCanvas"></canvas>
+
+<footer>
+  © 2024–2025 Created by Peter Gregory
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
