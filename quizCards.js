@@ -13,6 +13,14 @@ const QUIZZES = [
     url: "https://phennylalanine.github.io/JuniorHighVocab/Lesson7-1/",
     levelKey: "lesson7-1sLevelr", // Key used to track progress in localStorage
   },
+ {
+    icon: "🏃",
+    title: "Verbs Part 1",
+    jp: "現在形と過去分詞",
+    url: "https://phennylalanine.github.io/JuniorHighVocab/verbPractice/",
+    levelKey: "verb1Levelr", // Key used to track progress in localStorage
+  },
+  
   // Add more quiz objects here...
 ];
 
