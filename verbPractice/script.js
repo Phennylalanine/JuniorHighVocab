@@ -21,8 +21,8 @@ const maxComboForBonus = 5;
 // =========================
 let META_KEY = null;
 const DEFAULT_META_KEY = "Lesson7Vocabulary1";
-const ASK_THRESHOLD = 2;    // Threshold for showing progress reviews
-const COOLDOWN_DAYS = 7;    // Time limit for specific quiz resets
+const ASK_THRESHOLD = 3;    // Threshold for showing progress reviews
+const COOLDOWN_DAYS = 2;    // Time limit for specific quiz resets
 
 window.addEventListener("DOMContentLoaded", () => {
   // =========================
