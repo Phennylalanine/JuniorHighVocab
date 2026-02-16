@@ -1,34 +1,27 @@
-// Updated Implementation with Metadata Tracking, Progress Reviews, and Cooldown Checking
+// Code for verb practice
+const ASK_THRESHOLD = 10;
+const COOLDOWN_DAYS = 7;
 
-const ASK_THRESHOLD = 10; // Number of questions to ask before a progress review
-let questionCount = 0; // To track the number of questions asked
-let lastQuizTime = null; // To track the last quiz reset time
-const COOLDOWN_PERIOD = 60 * 60 * 1000; // 1 hour cooldown
+const META_KEY = 'meta_verbPractice_v1';
+const STORAGE_KEYS = {
+    xp: 'verbPractice_xp',
+    level: 'verbPractice_level'
+};
 
-// Function to ask a question
-function askQuestion() {
-    // Your implementation of question asking
-    questionCount++;
-    checkProgressReview();
+function saveProgress(score) {
+    localStorage.setItem(STORAGE_KEYS.xp, score);
 }
 
-// Function to check if progress review is needed
 function checkProgressReview() {
-    if (questionCount >= ASK_THRESHOLD) {
-        // Implement the logic for progress review
-        console.log('Progress review required after ' + questionCount + ' questions.');
-        questionCount = 0; // Reset question count after review
+    if (getCurrentQuestionCount() >= ASK_THRESHOLD) {
+        // Logic to trigger progress review
     }
 }
 
-// Function to reset the quiz
-function resetQuiz() {
-    const now = new Date().getTime();
-    if (lastQuizTime === null || (now - lastQuizTime) > COOLDOWN_PERIOD) {
-        // Reset logic
-        lastQuizTime = now;
-        console.log('Quiz reset successfully.');
-    } else {
-        console.log('Cooldown period active. Please wait before resetting the quiz.');
-    }
+function canResetQuiz() {
+    const lastReset = localStorage.getItem('lastReset') || new Date(0);
+    const daysSinceLastReset = (new Date() - new Date(lastReset)) / (1000 * 60 * 60 * 24);
+    return daysSinceLastReset >= COOLDOWN_DAYS;
 }
+
+// Original code structure continues here...
