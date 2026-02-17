@@ -196,6 +196,15 @@ input:focus {
   z-index: 1000;
 }
 
+.session-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.2rem;
+  padding: 2px 4px;
+  border-radius: 6px;
+  background: #eef2ff;
+}
+
 /* =========================
    Footer
    ========================= */
