@@ -197,6 +197,45 @@ input:focus {
 }
 
 /* =========================
+   Session Tracker Panel
+   ========================= */
+
+#quizScreen {
+  position: relative;
+}
+
+#sessionPanel {
+  position: absolute;
+  left: -140px;
+  top: 0;
+  width: 120px;
+  height: 100%;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  font-size: 0.75rem;
+  overflow-y: auto;
+}
+
+#sessionPanel h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.8rem;
+  color: #4f46e5;
+  text-align: center;
+}
+
+.session-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.2rem;
+  padding: 2px 4px;
+  border-radius: 6px;
+  background: #eef2ff;
+}
+
+
+/* =========================
    Footer
    ========================= */
 footer {
