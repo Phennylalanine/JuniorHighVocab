@@ -4,6 +4,7 @@
 
 const DATA_FILE = "questions.json";
 const RESET_DAYS = 2;
+const MAX_PER_QUESTION = 3;
 
 
 /* =========================
@@ -53,7 +54,8 @@ let level = 1;
 
 let sessionStats = {
   created: Date.now(),
-  words: {}
+  words: {},
+  progress: {} // correct count per question
 };
 
 
@@ -73,7 +75,15 @@ function loadSession() {
   const maxAge = RESET_DAYS * 24 * 60 * 60 * 1000;
 
   if (age > maxAge) {
+
     localStorage.removeItem("verbSession");
+
+    sessionStats = {
+      created: Date.now(),
+      words: {},
+      progress: {}
+    };
+
     return;
   }
 
@@ -87,6 +97,15 @@ function saveSession() {
     "verbSession",
     JSON.stringify(sessionStats)
   );
+}
+
+
+/* =========================
+   HELPERS
+========================= */
+
+function getQuestionKey(q) {
+  return q.en + "|" + q.jp;
 }
 
 
@@ -141,18 +160,36 @@ function updateStats() {
 
 function getRandomQuestion() {
 
-  const index = Math.floor(Math.random() * questions.length);
+  const available = questions.filter(q => {
 
-  return questions[index];
+    const key = getQuestionKey(q);
+
+    const count = sessionStats.progress[key] || 0;
+
+    return count < MAX_PER_QUESTION;
+  });
+
+  if (available.length === 0) {
+    endSession();
+    return null;
+  }
+
+  const index = Math.floor(Math.random() * available.length);
+
+  return available[index];
 }
 
 
 function loadNext() {
 
-  currentQuestion = getRandomQuestion();
+  const q = getRandomQuestion();
 
-  jpText.textContent = currentQuestion.jp;
-  enText.textContent = currentQuestion.en;
+  if (!q) return;
+
+  currentQuestion = q;
+
+  jpText.textContent = q.jp;
+  enText.textContent = q.en;
 
   input.value = "";
   input.disabled = false;
@@ -166,13 +203,22 @@ function loadNext() {
 }
 
 
+function endSession() {
+
+  quizScreen.classList.add("hidden");
+  startScreen.classList.remove("hidden");
+
+  alert("All questions completed for today.");
+}
+
+
 /* =========================
    WORD TRACKING
 ========================= */
 
 function registerWord(q) {
 
-  const key = q.en + "|" + q.jp;
+  const key = getQuestionKey(q);
 
   if (!sessionStats.words[key]) {
 
@@ -187,9 +233,8 @@ function registerWord(q) {
 
 function countAnswer(q) {
 
-  const key = q.en + "|" + q.jp;
+  const key = getQuestionKey(q);
 
-  /* First time: register */
   if (!sessionStats.words[key]) {
     registerWord(q);
   }
@@ -239,6 +284,14 @@ function checkAnswer() {
 
   if (!user) return;
 
+  const key = getQuestionKey(currentQuestion);
+
+  if (!sessionStats.progress[key]) {
+    sessionStats.progress[key] = 0;
+  }
+
+
+  /* CORRECT */
   if (user === correct) {
 
     feedback.textContent = "✓ Correct";
@@ -248,6 +301,13 @@ function checkAnswer() {
     combo++;
 
     xp++;
+
+    /* Increase progress */
+    sessionStats.progress[key]++;
+
+    if (sessionStats.progress[key] > MAX_PER_QUESTION) {
+      sessionStats.progress[key] = MAX_PER_QUESTION;
+    }
 
     /* Only count AFTER answering */
     countAnswer(currentQuestion);
@@ -261,6 +321,8 @@ function checkAnswer() {
     nextBtn.disabled = false;
   }
 
+
+  /* WRONG */
   else {
 
     feedback.textContent =
@@ -270,9 +332,18 @@ function checkAnswer() {
 
     combo = 0;
 
+    /* Decrease progress */
+    sessionStats.progress[key]--;
+
+    if (sessionStats.progress[key] < 0) {
+      sessionStats.progress[key] = 0;
+    }
+
     tryAgainBtn.style.display = "inline-block";
   }
 
+
+  saveSession();
   updateStats();
 }
 
