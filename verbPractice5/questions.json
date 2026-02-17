@@ -1,69 +1,66 @@
 {
-  "quizId": "verb1",
-  "title": "Verbs Part 1",
+  "quizId": "verb5",
+  "title": "Verbs Part 5",
   "version": 1,
   "questions": [
-  { "id": 1, "jp": "〜である／いる", "en": "be" },
-  { "id": 2, "jp": "〜であった／いた（完了）", "en": "been" },
+    { "id": 161, "jp": "購入する", "en": "buy" },
+    { "id": 162, "jp": "購入した", "en": "bought" },
 
-  { "id": 3, "jp": "持つ／ある", "en": "have" },
-  { "id": 4, "jp": "持っていた／あった", "en": "had" },
+    { "id": 163, "jp": "参加する", "en": "join" },
+    { "id": 164, "jp": "参加した", "en": "joined" },
 
-  { "id": 5, "jp": "する", "en": "do" },
-  { "id": 6, "jp": "した", "en": "done" },
+    { "id": 165, "jp": "選択する", "en": "select" },
+    { "id": 166, "jp": "選択した", "en": "selected" },
 
-  { "id": 7, "jp": "言う", "en": "say" },
-  { "id": 8, "jp": "言った", "en": "said" },
+    { "id": 167, "jp": "守る", "en": "protect" },
+    { "id": 168, "jp": "守った", "en": "protected" },
 
-  { "id": 9, "jp": "得る／手に入れる", "en": "get" },
-  { "id": 10, "jp": "得た／手に入れた", "en": "gotten" },
+    { "id": 169, "jp": "決める", "en": "decide" },
+    { "id": 170, "jp": "決めた", "en": "decided" },
 
-  { "id": 11, "jp": "作る", "en": "make" },
-  { "id": 12, "jp": "作った", "en": "made" },
+    { "id": 171, "jp": "説明する／述べる", "en": "describe" },
+    { "id": 172, "jp": "説明した／述べた", "en": "described" },
 
-  { "id": 13, "jp": "行く", "en": "go" },
-  { "id": 14, "jp": "行ってしまった", "en": "gone" },
+    { "id": 173, "jp": "準備する", "en": "prepare" },
+    { "id": 174, "jp": "準備した", "en": "prepared" },
 
-  { "id": 15, "jp": "知る", "en": "know" },
-  { "id": 16, "jp": "知っている", "en": "known" },
+    { "id": 175, "jp": "共有する", "en": "share" },
+    { "id": 176, "jp": "共有した", "en": "shared" },
 
-  { "id": 17, "jp": "取る", "en": "take" },
-  { "id": 18, "jp": "取った", "en": "taken" },
+    { "id": 177, "jp": "発展する／開発する", "en": "develop" },
+    { "id": 178, "jp": "発展した／開発した", "en": "developed" },
 
-  { "id": 19, "jp": "見る", "en": "see" },
-  { "id": 20, "jp": "見た", "en": "seen" },
+    { "id": 179, "jp": "成功する", "en": "succeed" },
+    { "id": 180, "jp": "成功した", "en": "succeeded" },
 
-  { "id": 21, "jp": "来る", "en": "come" },
-  { "id": 22, "jp": "来た", "en": "come" },
+    { "id": 181, "jp": "失敗する", "en": "fail" },
+    { "id": 182, "jp": "失敗した", "en": "failed" },
 
-  { "id": 23, "jp": "考える", "en": "think" },
-  { "id": 24, "jp": "考えた", "en": "thought" },
+    { "id": 183, "jp": "管理する", "en": "manage" },
+    { "id": 184, "jp": "管理した", "en": "managed" },
 
-  { "id": 25, "jp": "見る／探す", "en": "look" },
-  { "id": 26, "jp": "見た／探した", "en": "looked" },
+    { "id": 185, "jp": "解決する", "en": "solve" },
+    { "id": 186, "jp": "解決した", "en": "solved" },
 
-  { "id": 27, "jp": "欲しい／望む", "en": "want" },
-  { "id": 28, "jp": "欲しかった／望んだ", "en": "wanted" },
+    { "id": 187, "jp": "確認する", "en": "check" },
+    { "id": 188, "jp": "確認した", "en": "checked" },
 
-  { "id": 29, "jp": "与える", "en": "give" },
-  { "id": 30, "jp": "与えた", "en": "given" },
+    { "id": 189, "jp": "増加する", "en": "increase" },
+    { "id": 190, "jp": "増加した", "en": "increased" },
 
-  { "id": 31, "jp": "使う", "en": "use" },
-  { "id": 32, "jp": "使った", "en": "used" },
+    { "id": 191, "jp": "減らす／減る", "en": "reduce" },
+    { "id": 192, "jp": "減らした／減った", "en": "reduced" },
 
-  { "id": 33, "jp": "見つける", "en": "find" },
-  { "id": 34, "jp": "見つけた", "en": "found" },
+    { "id": 193, "jp": "提案する", "en": "suggest" },
+    { "id": 194, "jp": "提案した", "en": "suggested" },
 
-  { "id": 35, "jp": "伝える／話す", "en": "tell" },
-  { "id": 36, "jp": "伝えた／話した", "en": "told" },
+    { "id": 195, "jp": "反応する", "en": "respond" },
+    { "id": 196, "jp": "反応した", "en": "responded" },
 
-  { "id": 37, "jp": "働く", "en": "work" },
-  { "id": 38, "jp": "働いた", "en": "worked" },
+    { "id": 197, "jp": "拒否する", "en": "refuse" },
+    { "id": 198, "jp": "拒否した", "en": "refused" },
 
-  { "id": 39, "jp": "呼ぶ／電話する", "en": "call" },
-  { "id": 40, "jp": "呼んだ／電話した", "en": "called" }
-]
-
-
-
+    { "id": 199, "jp": "達成する", "en": "achieve" },
+    { "id": 200, "jp": "達成した", "en": "achieved" }
+  ]
 }
