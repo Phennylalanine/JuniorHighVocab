@@ -274,8 +274,7 @@ window.addEventListener("DOMContentLoaded", () => {
    * Checks if a progress review should be triggered based on questions asked.
    */
   function checkProgressReview() {
-    if (questionsAsked % ASK_THRESHOLD === 0 && questionsAsked > 0) {
-      showProgressReview();
+   //progress review disabled
     }
   }
 
