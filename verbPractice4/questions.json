@@ -36,8 +36,8 @@
     { "id": 141, "jp": "従う", "en": "follow" },
     { "id": 142, "jp": "従った", "en": "followed" },
 
-    { "id": 143, "jp": "止める／防ぐ", "en": "stop" },
-    { "id": 144, "jp": "止めた／防いだ", "en": "stopped" },
+   { "id": 143, "jp": "避ける", "en": "avoid" },
+  { "id": 144, "jp": "避けた", "en": "avoided" },
 
     { "id": 145, "jp": "作成する", "en": "create" },
     { "id": 146, "jp": "作成した", "en": "created" },
