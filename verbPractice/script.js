@@ -86,24 +86,130 @@ async function loadQuestions() {
 }
 
 /* =====================
-   QUIZ LOGIC (Transition & Next)
+   WORD TRACKING
 ===================== */
 
-// ✅ FIXED: This function now switches screens correctly
+/**
+ * Updates individual word mastery and triggers global XP gain
+ */
+function updateWord(q, isCorrect) {
+  const key = q.en + "|" + q.jp;
+
+  if (!sessionStats.words[key]) {
+    sessionStats.words[key] = {
+      en: q.en,
+      jp: q.jp,
+      correct: 0
+    };
+  }
+
+  if (isCorrect) {
+    sessionStats.words[key].correct++;
+    updateGlobalProgress();
+  } else {
+    // Decrease mastery slightly on wrong answer without going below 0
+    sessionStats.words[key].correct = Math.max(0, sessionStats.words[key].correct - 1);
+  }
+
+  saveSession();
+  updatePanel();
+}
+
+function updateGlobalProgress() {
+  globalProfile.xp++;
+  globalProfile.totalCorrect++;
+
+  const needed = 10 + globalProfile.level * 3;
+
+  if (globalProfile.xp >= needed) {
+    globalProfile.xp = 0;
+    globalProfile.level++;
+  }
+
+  saveGlobalProfile();
+}
+
+/* =====================
+   QUESTION POOL
+===================== */
+
+/**
+ * Filters questions that haven't reached the MASTER_LIMIT yet
+ */
+function getAvailableQuestions() {
+  return questions.filter(q => {
+    const key = q.en + "|" + q.jp;
+    const data = sessionStats.words[key];
+    if (!data) return true;
+    return data.correct < MASTER_LIMIT;
+  });
+}
+
+/**
+ * Picks a random question or ends the quiz if all are mastered
+ */
+function getRandomQuestion() {
+  const pool = getAvailableQuestions();
+  if (pool.length === 0) {
+    finishQuiz();
+    return null;
+  }
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+/* =====================
+   UI UPDATES
+===================== */
+
+/**
+ * Updates the score, combo, and XP bar
+ */
+function updateStats() {
+  if (pointsEl) pointsEl.textContent = score;
+  if (comboEl) comboEl.textContent = combo;
+  if (levelEl) levelEl.textContent = globalProfile.level;
+
+  const needed = 10 + globalProfile.level * 3;
+  if (xpText) xpText.textContent = `${globalProfile.xp} / ${needed}`;
+  if (xpBar) xpBar.style.width = (globalProfile.xp / needed) * 100 + "%";
+}
+
+/**
+ * Updates the 'Recent Activity' or 'Word Mastery' panel
+ */
+function updatePanel() {
+  if (!sessionList) return;
+  sessionList.innerHTML = "";
+
+  const list = Object.values(sessionStats.words);
+  list.sort((a, b) => b.correct - a.correct);
+
+  for (const w of list) {
+    const row = document.createElement("div");
+    row.className = "session-row";
+    row.textContent = `${w.jp} / ${w.en} : ${w.correct}`;
+    sessionList.appendChild(row);
+  }
+}
+
+/* =====================
+   QUIZ FLOW
+===================== */
+
 function startQuiz() {
   const startScreen = document.getElementById("startScreen");
   const quizScreen = document.getElementById("quizScreen");
 
-  // Show quiz, hide start screen
-  startScreen.classList.add("hidden");
-  startScreen.classList.remove("active");
-  quizScreen.classList.remove("hidden");
-  quizScreen.classList.add("active");
+  if (startScreen && quizScreen) {
+    startScreen.classList.add("hidden");
+    startScreen.classList.remove("active");
+    quizScreen.classList.remove("hidden");
+    quizScreen.classList.add("active");
+  }
 
-  loadNext(); // Load the first question
+  loadNext();
 }
 
-// Selects a random question that isn't mastered yet
 function loadNext() {
   currentQuestion = getRandomQuestion();
   if (!currentQuestion) return;
@@ -118,7 +224,6 @@ function loadNext() {
   input.focus();
 }
 
-// Logic for checking user answer
 function checkAnswer() {
   const user = input.value.trim().toLowerCase();
   const correct = currentQuestion.en.toLowerCase();
@@ -140,18 +245,25 @@ function checkAnswer() {
   updateStats();
 }
 
+function finishQuiz() {
+  alert("All words completed for today!");
+  localStorage.setItem("quiz_cooldown_" + QUIZ_ID, Date.now());
+  location.reload();
+}
+
 /* =====================
    INITIALIZATION & EVENTS
 ===================== */
 function init() {
-  startBtn.disabled = true; // Wait for questions to load
+  startBtn.disabled = true; 
   loadGlobalProfile();
   loadSession();
   loadQuestions();
+  updatePanel();
   updateStats();
 }
 
-startBtn.addEventListener("click", startQuiz); // Now calls startQuiz instead of loadNext
+startBtn.addEventListener("click", startQuiz);
 nextBtn.addEventListener("click", loadNext);
 input.addEventListener("keydown", e => { if (e.key === "Enter") checkAnswer(); });
 tryAgainBtn.addEventListener("click", () => {
