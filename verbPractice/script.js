@@ -1,7 +1,7 @@
 /* =====================
    QUIZ ID & CONFIG
 ===================== */
-const QUIZ_ID = "verbs_part1";
+const QUIZ_ID = "verbs_part2";
 const DATA_FILE = "./questions.json"; 
 const LOCAL_LEVEL_KEY = "verbPractice_level";
 const RESET_DAYS = 2;   // How often to reset progress
