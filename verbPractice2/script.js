@@ -192,7 +192,9 @@ function updateMastery(q, isCorrect) {
     sessionStats.words[key].correct++;
     globalProfile.xp++;
 
-    const needed = 10 + globalProfile.level * 3;
+  function xpNeeded(level) {
+  return Math.floor(25 + level * 6 + Math.pow(level, 1.3));
+}
 
     if (globalProfile.xp >= needed) {
       globalProfile.xp = 0;
@@ -229,7 +231,7 @@ function updateStats() {
   if (comboEl) comboEl.textContent = combo;
   if (levelEl) levelEl.textContent = globalProfile.level;
 
-  const needed = 10 + globalProfile.level * 3;
+const needed = xpNeeded(globalProfile.level);
 
   if (xpText) {
     xpText.textContent = `${globalProfile.xp} / ${needed}`;
