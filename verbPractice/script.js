@@ -275,7 +275,7 @@ window.addEventListener("DOMContentLoaded", () => {
    */
   function checkProgressReview() {
    //progress review disabled
-    }
+    
   }
 
   /**
