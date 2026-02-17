@@ -150,7 +150,7 @@ function loadNext() {
   currentQuestion = getRandomQuestion();
 
   jpText.textContent = currentQuestion.jp;
-  enText.textContent = "";
+  enText.textContent = currentQuestion.en;
 
   input.value = "";
   input.disabled = false;
