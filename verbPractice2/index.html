@@ -18,7 +18,7 @@
 <!-- Quiz Screen -->
 <div id="quizScreen" class="screen hidden">
   
-  <!-- Session Panel (Absolute positioned to the left) -->
+  <!-- Session Panel (Mastery Progress) -->
   <div id="sessionPanel">
     <h3>Mastery</h3>
     <div id="sessionList"></div>
@@ -52,10 +52,12 @@
   />
 
   <div id="feedback"></div>
-  <div id="choicesText"></div>
 
-  <button id="nextBtn" disabled>Next</button>
-  <button id="tryAgainBtn" style="display:none;">Try Again</button>
+  <!-- Button Container for Swapping -->
+  <div class="button-container">
+    <button id="nextBtn" class="hidden">Next</button>
+    <button id="tryAgainBtn" class="hidden">Try Again</button>
+  </div>
 </div>
 
 <canvas id="confettiCanvas"></canvas>
