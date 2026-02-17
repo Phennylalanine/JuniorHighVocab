@@ -9,7 +9,7 @@ const QUIZ_ID = "verbs_part1";
    CONFIG
 ===================== */
 
-const DATA_FILE = "questions.json";
+const DATA_FILE = "./questions.json";
 const RESET_DAYS = 2;
 const MASTER_LIMIT = 3;
 
@@ -125,7 +125,9 @@ let combo = 0;
 ===================== */
 
 async function loadQuestions() {
+
   try {
+
     const res = await fetch(DATA_FILE);
 
     if (!res.ok) {
@@ -136,21 +138,18 @@ async function loadQuestions() {
 
     questions = data.questions;
 
-    if (!questions || questions.length === 0) {
-      throw new Error("No questions found");
-    }
-
-    startBtn.disabled = false; // Enable start
+    startBtn.disabled = false;
 
   } catch (err) {
+
     console.error("Question load error:", err);
 
-    alert("Quiz data failed to load. Check questions.json.");
+    alert("Failed to load questions. Please refresh.");
 
-    // Allow manual start for debugging
-    startBtn.disabled = false;
+    startBtn.disabled = false; // fail-safe so button still works
   }
 }
+
 
 
 /* =====================
