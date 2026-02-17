@@ -143,10 +143,19 @@ function checkAnswer() {
      ========================= */
   else {
 
-    // Reset shake animation
-    input.classList.remove("shake-input");
-    void input.offsetWidth; // Force reflow
+    // Reset shake animation - remove both classes first
+    input.classList.remove("success-input", "shake-input");
+    
+    // Force browser reflow to reset animation
+    void input.offsetWidth;
+    
+    // Now add shake animation
     input.classList.add("shake-input");
+    
+    // Clean up animation class after it completes
+    setTimeout(() => {
+      input.classList.remove("shake-input");
+    }, 400);
 
     feedback.textContent = `✗ Answer: ${currentQuestion.en}`;
     feedback.className = "wrong-style";
