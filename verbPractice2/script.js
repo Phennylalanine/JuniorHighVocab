@@ -9,6 +9,7 @@ let currentQuestion = null;
 let score = 0;
 let combo = 0;
 
+/* DOM ELEMENTS */
 const startBtn = document.getElementById("startBtn");
 const nextBtn = document.getElementById("nextBtn");
 const tryAgainBtn = document.getElementById("tryAgainBtn");
@@ -39,7 +40,6 @@ async function init() {
   const savedSession = localStorage.getItem("quiz_session_" + QUIZ_ID);
   if (savedSession) {
     const data = JSON.parse(savedSession);
-    // Reset session after 2 days
     if ((Date.now() - data.created) < 172800000) sessionStats = data;
   }
 
@@ -47,7 +47,7 @@ async function init() {
     const res = await fetch(DATA_FILE);
     const data = await res.json();
     questions = data.questions;
-  } catch (e) { console.error("Data load error", e); }
+  } catch (e) { console.error("Error loading JSON", e); }
 
   updateStats();
   updatePanel();
@@ -60,7 +60,7 @@ function loadNext() {
   });
 
   if (pool.length === 0) {
-    alert("Incredible! You have mastered all words in this set.");
+    alert("Congrats! You've mastered all the words in this level!");
     location.reload();
     return;
   }
@@ -69,13 +69,14 @@ function loadNext() {
   jpText.textContent = currentQuestion.jp;
   enText.textContent = currentQuestion.en;
   
-  speak(currentQuestion.en); // Hear English
+  speak(currentQuestion.en);
 
   input.value = "";
   input.disabled = false;
   input.focus();
   feedback.textContent = "";
   
+  // Reset buttons
   nextBtn.classList.add("hidden");
   tryAgainBtn.classList.add("hidden");
 }
@@ -91,15 +92,18 @@ function checkAnswer() {
     score++; combo++;
     updateMastery(currentQuestion, true);
     input.disabled = true;
+    
     nextBtn.classList.remove("hidden");
     tryAgainBtn.classList.add("hidden");
   } else {
     input.classList.add("shake-input");
     setTimeout(() => input.classList.remove("shake-input"), 400);
+    
     feedback.textContent = `✗ Answer: ${currentQuestion.en}`;
     feedback.className = "wrong-style";
     combo = 0;
     updateMastery(currentQuestion, false);
+    
     tryAgainBtn.classList.remove("hidden");
     nextBtn.classList.add("hidden");
   }
@@ -149,13 +153,18 @@ function updatePanel() {
       row.textContent = `${w.en}: ${w.correct}/${MASTER_LIMIT}`;
       
       if (w.correct >= MASTER_LIMIT) {
+        row.classList.add("score-mastered");
         masteredList.appendChild(row);
       } else {
+        if (w.correct === 0) row.classList.add("score-0");
+        else if (w.correct === 1) row.classList.add("score-1");
+        else if (w.correct === 2) row.classList.add("score-2");
         inProgressList.appendChild(row);
       }
     });
 }
 
+/* EVENT LISTENERS */
 startBtn.addEventListener("click", () => {
   document.getElementById("startScreen").classList.add("hidden");
   document.getElementById("quizScreen").classList.remove("hidden");
@@ -164,6 +173,7 @@ startBtn.addEventListener("click", () => {
 });
 
 nextBtn.addEventListener("click", loadNext);
+
 tryAgainBtn.addEventListener("click", () => {
   input.value = "";
   input.focus();
@@ -173,10 +183,13 @@ tryAgainBtn.addEventListener("click", () => {
 
 input.addEventListener("keydown", e => {
   if (e.key === "Enter") {
-    if (!nextBtn.classList.contains("hidden")) loadNext();
-    else if (!tryAgainBtn.classList.contains("hidden")) {
-       input.value = ""; input.focus(); feedback.textContent = ""; tryAgainBtn.classList.add("hidden");
-    } else checkAnswer();
+    if (!nextBtn.classList.contains("hidden")) {
+      loadNext();
+    } else if (!tryAgainBtn.classList.contains("hidden")) {
+      input.value = ""; input.focus(); feedback.textContent = ""; tryAgainBtn.classList.add("hidden");
+    } else {
+      checkAnswer();
+    }
   }
 });
 
