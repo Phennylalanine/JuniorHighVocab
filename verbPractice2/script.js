@@ -1,7 +1,5 @@
 const QUIZ_ID = "verbs_part2";
 const DATA_FILE = "./questions.json"; 
-const LOCAL_LEVEL_KEY = "verbPractice2_level";
-const RESET_DAYS = 2;   
 const MASTER_LIMIT = 3; 
 
 let globalProfile = { level: 1, xp: 0, totalCorrect: 0 };
@@ -23,7 +21,8 @@ const comboEl = document.getElementById("combo");
 const levelEl = document.getElementById("level");
 const xpBar = document.getElementById("xpBar");
 const xpText = document.getElementById("xpText");
-const sessionList = document.getElementById("sessionList");
+const inProgressList = document.getElementById("inProgressList");
+const masteredList = document.getElementById("masteredList");
 
 function speak(text) {
   window.speechSynthesis.cancel();
@@ -40,7 +39,8 @@ async function init() {
   const savedSession = localStorage.getItem("quiz_session_" + QUIZ_ID);
   if (savedSession) {
     const data = JSON.parse(savedSession);
-    if ((Date.now() - data.created) < RESET_DAYS * 86400000) sessionStats = data;
+    // Reset session after 2 days
+    if ((Date.now() - data.created) < 172800000) sessionStats = data;
   }
 
   try {
@@ -60,7 +60,7 @@ function loadNext() {
   });
 
   if (pool.length === 0) {
-    alert("Perfect! All verbs mastered!");
+    alert("Incredible! You have mastered all words in this set.");
     location.reload();
     return;
   }
@@ -69,7 +69,7 @@ function loadNext() {
   jpText.textContent = currentQuestion.jp;
   enText.textContent = currentQuestion.en;
   
-  speak(currentQuestion.en); // Speaks English
+  speak(currentQuestion.en); // Hear English
 
   input.value = "";
   input.disabled = false;
@@ -91,20 +91,15 @@ function checkAnswer() {
     score++; combo++;
     updateMastery(currentQuestion, true);
     input.disabled = true;
-    
-    // Show Next Button
     nextBtn.classList.remove("hidden");
     tryAgainBtn.classList.add("hidden");
   } else {
     input.classList.add("shake-input");
     setTimeout(() => input.classList.remove("shake-input"), 400);
-    
     feedback.textContent = `✗ Answer: ${currentQuestion.en}`;
     feedback.className = "wrong-style";
     combo = 0;
     updateMastery(currentQuestion, false);
-    
-    // Show Try Again Button
     tryAgainBtn.classList.remove("hidden");
     nextBtn.classList.add("hidden");
   }
@@ -142,15 +137,22 @@ function updateStats() {
 }
 
 function updatePanel() {
-  if (!sessionList) return;
-  sessionList.innerHTML = "";
+  if (!inProgressList || !masteredList) return;
+  inProgressList.innerHTML = "";
+  masteredList.innerHTML = "";
+
   Object.values(sessionStats.words)
     .sort((a,b) => b.correct - a.correct)
     .forEach(w => {
       const row = document.createElement("div");
       row.className = "session-row";
       row.textContent = `${w.en}: ${w.correct}/${MASTER_LIMIT}`;
-      sessionList.appendChild(row);
+      
+      if (w.correct >= MASTER_LIMIT) {
+        masteredList.appendChild(row);
+      } else {
+        inProgressList.appendChild(row);
+      }
     });
 }
 
