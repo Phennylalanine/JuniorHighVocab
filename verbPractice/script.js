@@ -1,378 +1,323 @@
-/**
- * Lesson 7-1 Quiz Logic
- * Handles a vocabulary quiz with XP, leveling, and persistent progress tracking.
- */
+/* =========================
+   CONFIG
+========================= */
 
-// =========================
-// Quiz State Variables
-// =========================
-let currentQuestion = null; // Stores the object for the active question
-let score = 0;             // Tracks correct answers for the current session
-let combo = 0;             // Tracks consecutive correct answers
-let level = 1;             // User's current level (loaded from storage)
-let xp = 0;                // Current experience points toward next level
-let questions = [];        // Array of all normalized question objects
-let answered = false;      // Flag to prevent multiple submissions for one question
-let questionsAsked = 0;    // Track questions asked in this session for progress reviews
+const DATA_FILE = "verb1.json"; // your JSON file
+const RESET_DAYS = 2;
 
-const maxComboForBonus = 5;
 
-// =========================
-// Metadata / Cooldown Settings
-// =========================
-let META_KEY = null;
-const DEFAULT_META_KEY = "verbPractice";
-const ASK_THRESHOLD = 3;    // Threshold for showing progress reviews
-const COOLDOWN_DAYS = 2;    // Time limit for specific quiz resets
+/* =========================
+   ELEMENTS
+========================= */
 
-window.addEventListener("DOMContentLoaded", () => {
-  // =========================
-  // DOM Elements - Selection
-  // =========================
-  const jpText = document.getElementById("jpText");
-  const enText = document.getElementById("enText");
-  const answerInput = document.getElementById("answerInput");
-  const feedback = document.getElementById("feedback");
-  const nextBtn = document.getElementById("nextBtn");
-  const tryAgainBtn = document.getElementById("tryAgainBtn");
+const startScreen = document.getElementById("startScreen");
+const quizScreen = document.getElementById("quizScreen");
 
-  const pointsEl = document.getElementById("points");
-  const comboEl = document.getElementById("combo");
-  const levelEl = document.getElementById("level");
-  const xpBar = document.getElementById("xpBar");
-  const xpText = document.getElementById("xpText");
+const startBtn = document.getElementById("startBtn");
+const nextBtn = document.getElementById("nextBtn");
+const tryAgainBtn = document.getElementById("tryAgainBtn");
 
-  const startBtn = document.getElementById("startBtn");
+const jpText = document.getElementById("jpText");
+const enText = document.getElementById("enText");
 
-  // =========================
-  // Confetti Animation Setup
-  // =========================
-  const confettiCanvas = document.getElementById("confettiCanvas");
-  const ctx = confettiCanvas.getContext("2d");
-  let confettiParticles = [];
+const input = document.getElementById("answerInput");
+const feedback = document.getElementById("feedback");
 
-  // =========================
-  // UI Event Listeners
-  // =========================
-  startBtn.addEventListener("click", startQuiz);
+const pointsEl = document.getElementById("points");
+const comboEl = document.getElementById("combo");
 
-  nextBtn.addEventListener("click", () => {
-    if (answered) loadNextQuestion();
-  });
+const levelEl = document.getElementById("level");
+const xpBar = document.getElementById("xpBar");
+const xpText = document.getElementById("xpText");
 
-  // Handle "Enter" key for both submitting and proceeding
-  answerInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      if (!answered) checkAnswer();
-      else if (!nextBtn.disabled) nextBtn.click();
-    }
-  });
+const choicesText = document.getElementById("choicesText");
 
-  tryAgainBtn.addEventListener("click", tryAgain);
 
-  // Restore previous level and XP from localStorage
-  loadProgress();
+/* =========================
+   GAME STATE
+========================= */
 
-  // =========================
-  // Data Loading
-  // =========================
-  fetch("questions.json")
-    .then(res => res.json())
-    .then(data => {
-      // Handle various JSON formats (direct array or nested object)
-      const list = Array.isArray(data) ? data : data.questions;
-      questions = normalizeQuestions(list);
-      META_KEY = "meta_verbPractice_v1";
-      shuffleArray(questions); // Randomize question order on load
-    })
-    .catch(err => {
-      console.error("Failed to load questions:", err);
-    });
+let questions = [];
+let currentQuestion = null;
 
-  // =========================
-  // Quiz Control Flow
-  // =========================
-  
-  /**
-   * Switches from the start screen to the active quiz interface.
-   */
-  function startQuiz() {
-    if (!questions || questions.length === 0) {
-      alert("Questions are still loading.");
-      return;
-    }
+let score = 0;
+let combo = 0;
+let xp = 0;
+let level = 1;
 
-    // Check if cooldown period has passed before allowing a new quiz session
-    if (!canResetQuiz()) {
-      const daysRemaining = COOLDOWN_DAYS - Math.floor((Date.now() - getLastQuizTime()) / (1000 * 60 * 60 * 24));
-      alert(`You can reset the quiz in ${daysRemaining} day(s). Keep practicing!`);
-      return;
-    }
 
-    const startScreen = document.getElementById("startScreen");
-    const quizScreen = document.getElementById("quizScreen");
+/* =========================
+   SESSION TRACKING
+========================= */
 
-    // UI Transition
-    startScreen.classList.add("hidden");
-    startScreen.classList.remove("active");
-    quizScreen.classList.remove("hidden");
-    quizScreen.classList.add("active");
+let sessionStats = {
+  created: Date.now(),
+  words: {}
+};
 
-    // Reset session stats
-    score = 0;
-    combo = 0;
-    questionsAsked = 0;
-    answered = false;
 
-    // Save the current time as the quiz start time
-    localStorage.setItem(META_KEY + "_lastReset", Date.now().toString());
+/* =========================
+   STORAGE
+========================= */
 
-    updateStats();
-    loadNextQuestion();
+function loadSession() {
+
+  const saved = localStorage.getItem("verbSession");
+
+  if (!saved) return;
+
+  const data = JSON.parse(saved);
+
+  const age = Date.now() - data.created;
+  const maxAge = RESET_DAYS * 24 * 60 * 60 * 1000;
+
+  if (age > maxAge) {
+    localStorage.removeItem("verbSession");
+    return;
   }
 
-  /**
-   * Formats raw question data to ensure consistent property names.
-   */
-  function normalizeQuestions(arr) {
-    return arr.map((q, i) => ({
-      id: q.id ?? i + 1,
+  sessionStats = data;
+}
+
+
+function saveSession() {
+  localStorage.setItem(
+    "verbSession",
+    JSON.stringify(sessionStats)
+  );
+}
+
+
+/* =========================
+   LOAD JSON
+========================= */
+
+async function loadQuestions() {
+
+  const res = await fetch(DATA_FILE);
+  const data = await res.json();
+
+  questions = data.questions;
+
+  startBtn.disabled = false;
+}
+
+
+/* =========================
+   UI
+========================= */
+
+function showQuiz() {
+
+  startScreen.classList.add("hidden");
+  quizScreen.classList.remove("hidden");
+
+  loadNext();
+}
+
+
+function updateStats() {
+
+  pointsEl.textContent = score;
+  comboEl.textContent = combo;
+
+  levelEl.textContent = level;
+
+  const need = level * 10;
+
+  xpText.textContent = `${xp} / ${need} XP`;
+
+  const percent = Math.min((xp / need) * 100, 100);
+
+  xpBar.style.width = percent + "%";
+}
+
+
+/* =========================
+   QUESTION LOGIC
+========================= */
+
+function getRandomQuestion() {
+
+  const index = Math.floor(Math.random() * questions.length);
+
+  return questions[index];
+}
+
+
+function loadNext() {
+
+  currentQuestion = getRandomQuestion();
+
+  jpText.textContent = currentQuestion.jp;
+  enText.textContent = "";
+
+  input.value = "";
+  input.disabled = false;
+
+  feedback.textContent = "";
+
+  nextBtn.disabled = true;
+  tryAgainBtn.style.display = "none";
+
+  input.focus();
+
+  registerWord(currentQuestion);
+}
+
+
+/* =========================
+   WORD TRACKING
+========================= */
+
+function registerWord(q) {
+
+  const key = q.en + "|" + q.jp;
+
+  if (!sessionStats.words[key]) {
+
+    sessionStats.words[key] = {
+      en: q.en,
       jp: q.jp,
-      en: q.en
-    }));
+      count: 0
+    };
   }
 
-  /**
-   * Selects a random question and resets the input field.
-   */
-  function loadNextQuestion() {
-    currentQuestion = questions[Math.floor(Math.random() * questions.length)];
-    questionsAsked++;
+  saveSession();
 
-    jpText.textContent = currentQuestion.jp;
-    enText.textContent = currentQuestion.en;
-    answerInput.value = "";
-    answerInput.disabled = false;
-    answerInput.focus();
+  updatePanel();
+}
 
-    feedback.textContent = "";
-    nextBtn.disabled = true;
-    tryAgainBtn.style.display = "none";
-    answered = false;
 
-    // Check if progress review is needed
-    checkProgressReview();
+function countAnswer(q) {
 
-    // Trigger text-to-speech for the new question
-    speak(currentQuestion.en);
+  const key = q.en + "|" + q.jp;
+
+  if (!sessionStats.words[key]) return;
+
+  sessionStats.words[key].count++;
+
+  saveSession();
+
+  updatePanel();
+}
+
+
+/* =========================
+   SIDE PANEL
+========================= */
+
+function updatePanel() {
+
+  let html = "<strong>Session Words</strong><br><br>";
+
+  const list = Object.values(sessionStats.words);
+
+  list.sort((a, b) => b.count - a.count);
+
+  for (const w of list) {
+
+    html += `
+      ${w.jp} / ${w.en}
+      : ${w.count}<br>
+    `;
   }
 
-  // =========================
-  // Answer Processing
-  // =========================
+  choicesText.innerHTML = html;
+}
 
-  /**
-   * Compares user input with the correct English answer.
-   */
-  function checkAnswer() {
-    if (answered) return;
-    answered = true;
 
-    const user = answerInput.value.trim();
-    const correct = currentQuestion.en;
+/* =========================
+   ANSWER CHECK
+========================= */
 
-    if (user === correct) {
-      feedback.innerHTML = "✔️ Correct!";
-      feedback.style.color = "green";
-      score++;
-      combo++;
-      gainXP(1); // Increment progression
-      nextBtn.disabled = false;
-    } else {
-      feedback.innerHTML = `✖️ Wrong<br>Correct: <strong>${correct}</strong>`;
-      feedback.style.color = "red";
-      combo = 0;
-      tryAgainBtn.style.display = "inline-block";
-    }
+function checkAnswer() {
 
-    answerInput.disabled = true;
-    updateStats();
-  }
+  const user = input.value.trim().toLowerCase();
+  const correct = currentQuestion.en.toLowerCase();
 
-  /**
-   * Resets UI for a second attempt on the same question (no XP reward).
-   */
-  function tryAgain() {
-    feedback.textContent = "";
-    answerInput.disabled = false;
-    answerInput.value = "";
-    answerInput.focus();
-    tryAgainBtn.style.display = "none";
-    answered = false;
-  }
+  if (!user) return;
 
-  // =========================
-  // XP & Leveling System
-  // =========================
+  if (user === correct) {
 
-  /**
-   * Adds XP and checks if the user has reached a new level.
-   */
-  function gainXP(amount) {
-    xp += amount;
-    if (xp >= xpToNextLevel(level)) {
+    feedback.textContent = "✓ Correct";
+    feedback.style.color = "green";
+
+    score++;
+    combo++;
+
+    xp++;
+
+    countAnswer(currentQuestion);
+
+    if (xp >= level * 10) {
       xp = 0;
       level++;
-      triggerConfetti(); // Visual reward for leveling up
     }
-    saveProgress();
-    updateStats();
+
+    input.disabled = true;
+    nextBtn.disabled = false;
   }
 
-  /**
-   * Calculation for increasing difficulty (required XP per level).
-   */
-  function xpToNextLevel(lv) {
-    return 3 + lv * 2;
+  else {
+
+    feedback.textContent =
+      `✗ Correct: ${currentQuestion.en}`;
+
+    feedback.style.color = "red";
+
+    combo = 0;
+
+    tryAgainBtn.style.display = "inline-block";
   }
 
-  /**
-   * Synchronizes internal variables with the DOM elements.
-   */
-  function updateStats() {
-    pointsEl.textContent = score;
-    comboEl.textContent = combo;
-    levelEl.textContent = level;
+  updateStats();
+}
 
-    const needed = xpToNextLevel(level);
-    xpBar.style.width = `${(xp / needed) * 100}%`;
-    if (xpText) xpText.textContent = `${xp} / ${needed}`;
+
+/* =========================
+   EVENTS
+========================= */
+
+startBtn.addEventListener("click", showQuiz);
+
+
+input.addEventListener("keydown", e => {
+
+  if (e.key === "Enter") {
+    checkAnswer();
   }
-
-  /**
-   * Persists progress data to the browser's local storage.
-   */
-  function saveProgress() {
-    localStorage.setItem("verbPractice_xp", xp);
-    localStorage.setItem("verbPractice_level", level);
-  }
-
-  /**
-   * Retrieves data from storage on initial load.
-   */
-  function loadProgress() {
-    xp = Number(localStorage.getItem("verbPractice_xp")) || 0;
-    level = Number(localStorage.getItem("verbPractice_level")) || 1;
-    updateStats();
-  }
-
-  // =========================
-  // Progress Review & Cooldown
-  // =========================
-
-  /**
-   * Checks if a progress review should be triggered based on questions asked.
-   */
-  function checkProgressReview() {
-   //progress review disabled
-    
-  }
-
-  /**
-   * Displays a progress summary modal.
-   */
-  function showProgressReview() {
-    const accuracy = questionsAsked > 0 ? Math.round((score / questionsAsked) * 100) : 0;
-    const message = `
-      📊 Progress Review
-      ────────────────
-      Questions Asked: ${questionsAsked}
-      Correct Answers: ${score}
-      Accuracy: ${accuracy}%
-      Current Combo: ${combo}
-      Level: ${level}
-      
-      Keep up the great work!
-    `;
-    alert(message);
-  }
-
-  /**
-   * Retrieves the last quiz reset time from localStorage.
-   */
-  function getLastQuizTime() {
-    const lastTime = localStorage.getItem(META_KEY + "_lastReset");
-    return lastTime ? parseInt(lastTime, 10) : 0;
-  }
-
-  /**
-   * Checks if the cooldown period has passed since the last quiz reset.
-   */
-  function canResetQuiz() {
-    const lastTime = getLastQuizTime();
-    if (lastTime === 0) return true; // First time, no cooldown
-    const daysSinceReset = (Date.now() - lastTime) / (1000 * 60 * 60 * 24);
-    return daysSinceReset >= COOLDOWN_DAYS;
-  }
-
-  // =========================
-  // Utilities & Visuals
-  // =========================
-
-  /**
-   * Randomizes array items using the Fisher-Yates algorithm.
-   */
-  function shuffleArray(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-  }
-
-  /**
-   * Uses Web Speech API to provide audio feedback.
-   */
-  function speak(text) {
-    if (!text) return;
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "en-UK";
-    speechSynthesis.speak(u);
-  }
-
-  /**
-   * Generates confetti particles for celebrations.
-   */
-  function triggerConfetti() {
-    confettiParticles = [];
-    for (let i = 0; i < 80; i++) {
-      confettiParticles.push({
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * -20,
-        r: Math.random() * 5 + 2,
-        d: Math.random() * 4 + 1,
-        color: `hsl(${Math.random() * 360},100%,70%)`
-      });
-    }
-    // Stop the falling effect after a short delay
-    setTimeout(() => { confettiParticles = []; }, 1200);
-  }
-
-  /**
-   * Renders the movement of confetti particles on the canvas.
-   */
-  function drawConfetti() {
-    ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-    confettiParticles.forEach(p => {
-      ctx.beginPath();
-      ctx.fillStyle = p.color;
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fill();
-      p.y += p.d;
-    });
-  }
-
-  // Handle canvas sizing and animation loop
-  confettiCanvas.width = window.innerWidth;
-  confettiCanvas.height = window.innerHeight;
-  setInterval(drawConfetti, 30);
 });
+
+
+nextBtn.addEventListener("click", loadNext);
+
+
+tryAgainBtn.addEventListener("click", () => {
+
+  input.value = "";
+  input.focus();
+
+  feedback.textContent = "";
+
+  tryAgainBtn.style.display = "none";
+});
+
+
+/* =========================
+   INIT
+========================= */
+
+function init() {
+
+  startBtn.disabled = true;
+
+  loadSession();
+
+  loadQuestions();
+
+  updatePanel();
+  updateStats();
+}
+
+init();
