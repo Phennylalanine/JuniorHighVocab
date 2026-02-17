@@ -16,8 +16,6 @@ let globalProfile = { level: 1, xp: 0, totalCorrect: 0 };
 let sessionStats = { created: Date.now(), words: {} };
 let questions = [];
 let currentQuestion = null;
-let score = 0;
-let combo = 0;
 
 /* =========================
    DOM ELEMENTS
@@ -130,9 +128,7 @@ function checkAnswer() {
     input.classList.add("success-input");
     input.disabled = true;
 
-    score++;
-    combo++;
-
+  
     updateMastery(currentQuestion, true);
 
     setTimeout(loadNext, 800);
@@ -215,8 +211,7 @@ function updateMastery(q, isCorrect) {
    ========================= */
 function updateStats() {
 
-  if (pointsEl) pointsEl.textContent = score;
-  if (comboEl) comboEl.textContent = combo;
+
   if (levelEl) levelEl.textContent = globalProfile.level;
 
   const needed = xpNeeded(globalProfile.level);
