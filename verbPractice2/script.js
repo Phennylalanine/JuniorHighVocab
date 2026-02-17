@@ -5,6 +5,13 @@ const QUIZ_ID = "verbs_part2";
 const DATA_FILE = "./questions.json";
 const MASTER_LIMIT = 3;
 
+/* =========================
+   XP Curve
+   ========================= */
+function xpNeeded(level) {
+  return Math.floor(25 + level * 6 + Math.pow(level, 1.3));
+}
+
 let globalProfile = { level: 1, xp: 0, totalCorrect: 0 };
 let sessionStats = { created: Date.now(), words: {} };
 let questions = [];
@@ -115,9 +122,6 @@ function checkAnswer() {
 
   if (!user || input.disabled) return;
 
-  /* =========================
-     CORRECT
-     ========================= */
   if (user === correct) {
 
     feedback.textContent = "✓ Correct!";
@@ -131,33 +135,18 @@ function checkAnswer() {
 
     updateMastery(currentQuestion, true);
 
-    // Auto-advance
-    setTimeout(() => {
-      loadNext();
-    }, 800);
+    setTimeout(loadNext, 800);
 
-  }
+  } else {
 
-  /* =========================
-     INCORRECT
-     ========================= */
-  else {
+    // Restart shake animation
+    input.classList.remove("shake-input");
 
-   // Restart shake animation safely
-input.classList.remove("shake-input");
-
-requestAnimationFrame(() => {
-  requestAnimationFrame(() => {
-    input.classList.add("shake-input");
-  });
-});
-
-
-    
-    // Clean up animation class after it completes
-    setTimeout(() => {
-      input.classList.remove("shake-input");
-    }, 400);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        input.classList.add("shake-input");
+      });
+    });
 
     feedback.textContent = `✗ Answer: ${currentQuestion.en}`;
     feedback.className = "wrong-style";
@@ -192,12 +181,11 @@ function updateMastery(q, isCorrect) {
     sessionStats.words[key].correct++;
     globalProfile.xp++;
 
-  function xpNeeded(level) {
-  return Math.floor(25 + level * 6 + Math.pow(level, 1.3));
-}
+    const needed = xpNeeded(globalProfile.level);
 
-    if (globalProfile.xp >= needed) {
-      globalProfile.xp = 0;
+    // Handle multiple level-ups safely
+    while (globalProfile.xp >= needed) {
+      globalProfile.xp -= needed;
       globalProfile.level++;
     }
 
@@ -231,7 +219,7 @@ function updateStats() {
   if (comboEl) comboEl.textContent = combo;
   if (levelEl) levelEl.textContent = globalProfile.level;
 
-const needed = xpNeeded(globalProfile.level);
+  const needed = xpNeeded(globalProfile.level);
 
   if (xpText) {
     xpText.textContent = `${globalProfile.xp} / ${needed}`;
