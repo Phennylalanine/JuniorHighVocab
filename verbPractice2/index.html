@@ -3,25 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Verb Practice</title>
+  <title>Verb Practice Part 2</title>
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<h1 class="page-title">動詞練習</h1>
+<h1 class="page-title">動詞練習 Part 2</h1>
 
-<!-- 1. Start Screen - Correctly Closed -->
+<!-- Start Screen -->
 <div id="startScreen" class="screen active">
   <button id="startBtn">Start Quiz</button>
 </div>
 
-<!-- 2. Quiz Screen - Everything below is INSIDE the Quiz Screen -->
+<!-- Quiz Screen -->
 <div id="quizScreen" class="screen hidden">
   
-  <!-- Session Panel (Moved inside so it only shows during the quiz) -->
+  <!-- Session Panel (Absolute positioned to the left) -->
   <div id="sessionPanel">
-    <h3>Mastery Progress</h3>
+    <h3>Mastery</h3>
     <div id="sessionList"></div>
   </div>
   
@@ -36,7 +35,6 @@
       </div>
       <small id="xpText">0 / 10 XP</small>
     </div>
-
     <div>
       <strong>Score:</strong> <span id="points">0</span> |
       <strong>Combo:</strong> <span id="combo">0</span>
@@ -50,7 +48,7 @@
     type="text"
     id="answerInput"
     autocomplete="off"
-    placeholder="Type the correct English"
+    placeholder="Type the English"
   />
 
   <div id="feedback"></div>
@@ -58,7 +56,7 @@
 
   <button id="nextBtn" disabled>Next</button>
   <button id="tryAgainBtn" style="display:none;">Try Again</button>
-</div> <!-- This correctly closes the quizScreen -->
+</div>
 
 <canvas id="confettiCanvas"></canvas>
 
