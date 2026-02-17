@@ -125,13 +125,31 @@ let combo = 0;
 ===================== */
 
 async function loadQuestions() {
+  try {
+    const res = await fetch(DATA_FILE);
 
-  const res = await fetch(DATA_FILE);
-  const data = await res.json();
+    if (!res.ok) {
+      throw new Error("Failed to load questions.json");
+    }
 
-  questions = data.questions;
+    const data = await res.json();
 
-  startBtn.disabled = false;
+    questions = data.questions;
+
+    if (!questions || questions.length === 0) {
+      throw new Error("No questions found");
+    }
+
+    startBtn.disabled = false; // Enable start
+
+  } catch (err) {
+    console.error("Question load error:", err);
+
+    alert("Quiz data failed to load. Check questions.json.");
+
+    // Allow manual start for debugging
+    startBtn.disabled = false;
+  }
 }
 
 
