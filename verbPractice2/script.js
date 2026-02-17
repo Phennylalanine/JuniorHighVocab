@@ -1,3 +1,6 @@
+/* =========================
+   Configuration & State
+   ========================= */
 const QUIZ_ID = "verbs_part2";
 const DATA_FILE = "./questions.json"; 
 const MASTER_LIMIT = 3; 
@@ -25,6 +28,9 @@ const xpText = document.getElementById("xpText");
 const inProgressList = document.getElementById("inProgressList");
 const masteredList = document.getElementById("masteredList");
 
+/* =========================
+   Speech System
+   ========================= */
 function speak(text) {
   window.speechSynthesis.cancel();
   const msg = new SpeechSynthesisUtterance(text);
@@ -33,21 +39,29 @@ function speak(text) {
   window.speechSynthesis.speak(msg);
 }
 
+/* =========================
+   Core Logic
+   ========================= */
 async function init() {
+  // Load Global Profile
   const savedProfile = localStorage.getItem("quiz_global_profile");
   if (savedProfile) globalProfile = JSON.parse(savedProfile);
   
+  // Load Session Stats (reset every 48 hours)
   const savedSession = localStorage.getItem("quiz_session_" + QUIZ_ID);
   if (savedSession) {
     const data = JSON.parse(savedSession);
     if ((Date.now() - data.created) < 172800000) sessionStats = data;
   }
 
+  // Load Questions
   try {
     const res = await fetch(DATA_FILE);
     const data = await res.json();
     questions = data.questions;
-  } catch (e) { console.error("Error loading JSON", e); }
+  } catch (e) {
+    console.error("Critical Error: Could not load questions.json", e);
+  }
 
   updateStats();
   updatePanel();
@@ -60,7 +74,7 @@ function loadNext() {
   });
 
   if (pool.length === 0) {
-    alert("Congrats! You've mastered all the words in this level!");
+    alert("Incredible! You have mastered all the verbs in this level!");
     location.reload();
     return;
   }
@@ -71,12 +85,11 @@ function loadNext() {
   
   speak(currentQuestion.en);
 
+  // UI Reset
   input.value = "";
   input.disabled = false;
-  input.focus();
+  input.focus(); // Focus back to typing
   feedback.textContent = "";
-  
-  // Reset buttons
   nextBtn.classList.add("hidden");
   tryAgainBtn.classList.add("hidden");
 }
@@ -91,10 +104,13 @@ function checkAnswer() {
     feedback.className = "correct-style";
     score++; combo++;
     updateMastery(currentQuestion, true);
-    input.disabled = true;
     
+    input.disabled = true; // Lock the input
     nextBtn.classList.remove("hidden");
     tryAgainBtn.classList.add("hidden");
+    
+    // UI FOCUS: MOVE TO NEXT BUTTON
+    nextBtn.focus(); 
   } else {
     input.classList.add("shake-input");
     setTimeout(() => input.classList.remove("shake-input"), 400);
@@ -106,13 +122,21 @@ function checkAnswer() {
     
     tryAgainBtn.classList.remove("hidden");
     nextBtn.classList.add("hidden");
+    
+    // UI FOCUS: MOVE TO TRY AGAIN BUTTON
+    tryAgainBtn.focus();
   }
   updateStats();
 }
 
+/* =========================
+   Data Management
+   ========================= */
 function updateMastery(q, isCorrect) {
   const key = q.en + "|" + q.jp;
-  if (!sessionStats.words[key]) sessionStats.words[key] = { en: q.en, jp: q.jp, correct: 0 };
+  if (!sessionStats.words[key]) {
+    sessionStats.words[key] = { en: q.en, jp: q.jp, correct: 0 };
+  }
   
   if (isCorrect) {
     sessionStats.words[key].correct++;
@@ -152,45 +176,4 @@ function updatePanel() {
       row.className = "session-row";
       row.textContent = `${w.en}: ${w.correct}/${MASTER_LIMIT}`;
       
-      if (w.correct >= MASTER_LIMIT) {
-        row.classList.add("score-mastered");
-        masteredList.appendChild(row);
-      } else {
-        if (w.correct === 0) row.classList.add("score-0");
-        else if (w.correct === 1) row.classList.add("score-1");
-        else if (w.correct === 2) row.classList.add("score-2");
-        inProgressList.appendChild(row);
-      }
-    });
-}
-
-/* EVENT LISTENERS */
-startBtn.addEventListener("click", () => {
-  document.getElementById("startScreen").classList.add("hidden");
-  document.getElementById("quizScreen").classList.remove("hidden");
-  document.getElementById("quizScreen").classList.add("active");
-  loadNext();
-});
-
-nextBtn.addEventListener("click", loadNext);
-
-tryAgainBtn.addEventListener("click", () => {
-  input.value = "";
-  input.focus();
-  feedback.textContent = "";
-  tryAgainBtn.classList.add("hidden");
-});
-
-input.addEventListener("keydown", e => {
-  if (e.key === "Enter") {
-    if (!nextBtn.classList.contains("hidden")) {
-      loadNext();
-    } else if (!tryAgainBtn.classList.contains("hidden")) {
-      input.value = ""; input.focus(); feedback.textContent = ""; tryAgainBtn.classList.add("hidden");
-    } else {
-      checkAnswer();
-    }
-  }
-});
-
-init();
+      if (w.
