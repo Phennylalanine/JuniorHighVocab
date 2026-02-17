@@ -1,48 +1,16 @@
-/* =====================
-   QUIZ ID & CONFIG
-===================== */
 const QUIZ_ID = "verbs_part2";
 const DATA_FILE = "./questions.json"; 
 const LOCAL_LEVEL_KEY = "verbPractice2_level";
 const RESET_DAYS = 2;   
 const MASTER_LIMIT = 3; 
 
-/* =====================
-   GLOBAL PROFILE (XP & Levels)
-===================== */
-const GLOBAL_PROFILE_KEY = "quiz_global_profile";
 let globalProfile = { level: 1, xp: 0, totalCorrect: 0 };
-
-function loadGlobalProfile() {
-  const saved = localStorage.getItem(GLOBAL_PROFILE_KEY);
-  if (saved) globalProfile = JSON.parse(saved);
-}
-
-function saveGlobalProfile() {
-  localStorage.setItem(GLOBAL_PROFILE_KEY, JSON.stringify(globalProfile));
-}
-
-/* =====================
-   SESSION STORAGE
-===================== */
-const SESSION_KEY = "quiz_session_" + QUIZ_ID;
 let sessionStats = { created: Date.now(), words: {} };
+let questions = [];
+let currentQuestion = null;
+let score = 0;
+let combo = 0;
 
-function loadSession() {
-  const saved = localStorage.getItem(SESSION_KEY);
-  if (!saved) return;
-  const data = JSON.parse(saved);
-  if ((Date.now() - data.created) > RESET_DAYS * 86400000) return;
-  sessionStats = data;
-}
-
-function saveSession() {
-  localStorage.setItem(SESSION_KEY, JSON.stringify(sessionStats));
-}
-
-/* =====================
-   DOM ELEMENTS
-===================== */
 const startBtn = document.getElementById("startBtn");
 const nextBtn = document.getElementById("nextBtn");
 const tryAgainBtn = document.getElementById("tryAgainBtn");
@@ -57,60 +25,32 @@ const xpBar = document.getElementById("xpBar");
 const xpText = document.getElementById("xpText");
 const sessionList = document.getElementById("sessionList");
 
-let questions = [];
-let currentQuestion = null;
-let score = 0;
-let combo = 0;
-
-/* =====================
-   NEW: TEXT TO SPEECH (English)
-===================== */
 function speak(text) {
-  // Cancel any ongoing speech so they don't overlap
   window.speechSynthesis.cancel();
   const msg = new SpeechSynthesisUtterance(text);
-  msg.lang = 'en-US'; 
-  msg.rate = 0.9; 
+  msg.lang = 'en-US';
+  msg.rate = 0.9;
   window.speechSynthesis.speak(msg);
 }
 
-/* =====================
-   GAME LOGIC
-===================== */
-async function loadQuestions() {
+async function init() {
+  const savedProfile = localStorage.getItem("quiz_global_profile");
+  if (savedProfile) globalProfile = JSON.parse(savedProfile);
+  
+  const savedSession = localStorage.getItem("quiz_session_" + QUIZ_ID);
+  if (savedSession) {
+    const data = JSON.parse(savedSession);
+    if ((Date.now() - data.created) < RESET_DAYS * 86400000) sessionStats = data;
+  }
+
   try {
     const res = await fetch(DATA_FILE);
     const data = await res.json();
     questions = data.questions;
-    startBtn.disabled = false;
-  } catch (err) { console.error(err); }
-}
+  } catch (e) { console.error("Data load error", e); }
 
-function updateWord(q, isCorrect) {
-  const key = q.en + "|" + q.jp;
-  if (!sessionStats.words[key]) {
-    sessionStats.words[key] = { en: q.en, jp: q.jp, correct: 0 };
-  }
-  if (isCorrect) {
-    sessionStats.words[key].correct++;
-    updateGlobalProgress();
-  } else {
-    sessionStats.words[key].correct = Math.max(0, sessionStats.words[key].correct - 1);
-  }
-  saveSession();
+  updateStats();
   updatePanel();
-}
-
-function updateGlobalProgress() {
-  globalProfile.xp++;
-  globalProfile.totalCorrect++;
-  const needed = 10 + globalProfile.level * 3;
-  if (globalProfile.xp >= needed) {
-    globalProfile.xp = 0;
-    globalProfile.level++;
-  }
-  saveGlobalProfile();
-  localStorage.setItem(LOCAL_LEVEL_KEY, globalProfile.level);
 }
 
 function loadNext() {
@@ -120,7 +60,7 @@ function loadNext() {
   });
 
   if (pool.length === 0) {
-    alert("Mastered all items!");
+    alert("Perfect! All verbs mastered!");
     location.reload();
     return;
   }
@@ -129,15 +69,15 @@ function loadNext() {
   jpText.textContent = currentQuestion.jp;
   enText.textContent = currentQuestion.en;
   
-  // TRIGGER SPEECH
-  speak(currentQuestion.en);
+  speak(currentQuestion.en); // Speaks English
 
   input.value = "";
   input.disabled = false;
-  feedback.textContent = "";
-  nextBtn.disabled = true;
-  tryAgainBtn.style.display = "none";
   input.focus();
+  feedback.textContent = "";
+  
+  nextBtn.classList.add("hidden");
+  tryAgainBtn.classList.add("hidden");
 }
 
 function checkAnswer() {
@@ -146,30 +86,52 @@ function checkAnswer() {
   if (!user) return;
 
   if (user === correct) {
-    feedback.textContent = "✓ Correct";
+    feedback.textContent = "✓ Correct!";
     feedback.className = "correct-style";
-    score++;
-    combo++;
-    updateWord(currentQuestion, true);
+    score++; combo++;
+    updateMastery(currentQuestion, true);
     input.disabled = true;
-    nextBtn.disabled = false;
+    
+    // Show Next Button
+    nextBtn.classList.remove("hidden");
+    tryAgainBtn.classList.add("hidden");
   } else {
-    // TRIGGER SHAKE
     input.classList.add("shake-input");
     setTimeout(() => input.classList.remove("shake-input"), 400);
-
+    
     feedback.textContent = `✗ Answer: ${currentQuestion.en}`;
     feedback.className = "wrong-style";
     combo = 0;
-    updateWord(currentQuestion, false);
-    tryAgainBtn.style.display = "inline-block";
+    updateMastery(currentQuestion, false);
+    
+    // Show Try Again Button
+    tryAgainBtn.classList.remove("hidden");
+    nextBtn.classList.add("hidden");
   }
   updateStats();
 }
 
-/* =====================
-   UI HELPERS & EVENTS
-===================== */
+function updateMastery(q, isCorrect) {
+  const key = q.en + "|" + q.jp;
+  if (!sessionStats.words[key]) sessionStats.words[key] = { en: q.en, jp: q.jp, correct: 0 };
+  
+  if (isCorrect) {
+    sessionStats.words[key].correct++;
+    globalProfile.xp++;
+    const needed = 10 + globalProfile.level * 3;
+    if (globalProfile.xp >= needed) {
+      globalProfile.xp = 0;
+      globalProfile.level++;
+    }
+  } else {
+    sessionStats.words[key].correct = Math.max(0, sessionStats.words[key].correct - 1);
+  }
+  
+  localStorage.setItem("quiz_global_profile", JSON.stringify(globalProfile));
+  localStorage.setItem("quiz_session_" + QUIZ_ID, JSON.stringify(sessionStats));
+  updatePanel();
+}
+
 function updateStats() {
   if (pointsEl) pointsEl.textContent = score;
   if (comboEl) comboEl.textContent = combo;
@@ -192,15 +154,6 @@ function updatePanel() {
     });
 }
 
-function init() {
-  loadGlobalProfile();
-  loadSession();
-  loadQuestions();
-  updatePanel();
-  updateStats();
-  localStorage.setItem(LOCAL_LEVEL_KEY, globalProfile.level);
-}
-
 startBtn.addEventListener("click", () => {
   document.getElementById("startScreen").classList.add("hidden");
   document.getElementById("quizScreen").classList.remove("hidden");
@@ -209,12 +162,20 @@ startBtn.addEventListener("click", () => {
 });
 
 nextBtn.addEventListener("click", loadNext);
-input.addEventListener("keydown", e => { if (e.key === "Enter") checkAnswer(); });
 tryAgainBtn.addEventListener("click", () => {
   input.value = "";
   input.focus();
   feedback.textContent = "";
-  tryAgainBtn.style.display = "none";
+  tryAgainBtn.classList.add("hidden");
+});
+
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    if (!nextBtn.classList.contains("hidden")) loadNext();
+    else if (!tryAgainBtn.classList.contains("hidden")) {
+       input.value = ""; input.focus(); feedback.textContent = ""; tryAgainBtn.classList.add("hidden");
+    } else checkAnswer();
+  }
 });
 
 init();
