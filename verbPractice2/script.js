@@ -21,7 +21,7 @@ const maxComboForBonus = 5;
 // Metadata / Cooldown Settings
 // =========================
 let META_KEY = null;
-const DEFAULT_META_KEY = "verbPractice";
+const DEFAULT_META_KEY = "verbPractice2";
 const ASK_THRESHOLD = 3;    // Threshold for showing progress reviews
 const COOLDOWN_DAYS = 2;    // Time limit for specific quiz resets
 
@@ -82,7 +82,7 @@ window.addEventListener("DOMContentLoaded", () => {
       // Handle various JSON formats (direct array or nested object)
       const list = Array.isArray(data) ? data : data.questions;
       questions = normalizeQuestions(list);
-      META_KEY = "meta_verbPractice_v1";
+      META_KEY = "meta_verbPractice2_v1";
       shuffleArray(questions); // Randomize question order on load
     })
     .catch(err => {
@@ -253,16 +253,16 @@ window.addEventListener("DOMContentLoaded", () => {
    * Persists progress data to the browser's local storage.
    */
   function saveProgress() {
-    localStorage.setItem("verbPractice_xp", xp);
-    localStorage.setItem("verbPractice_level", level);
+    localStorage.setItem("verbPractice2_xp", xp);
+    localStorage.setItem("verbPractice2_level", level);
   }
 
   /**
    * Retrieves data from storage on initial load.
    */
   function loadProgress() {
-    xp = Number(localStorage.getItem("verbPractice_xp")) || 0;
-    level = Number(localStorage.getItem("verbPractice_level")) || 1;
+    xp = Number(localStorage.getItem("verbPractice2_xp")) || 0;
+    level = Number(localStorage.getItem("verbPractice2_level")) || 1;
     updateStats();
   }
 
