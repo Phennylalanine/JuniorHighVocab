@@ -2,7 +2,7 @@
    CONFIG
 ========================= */
 
-const DATA_FILE = "questions.json"; // your JSON file
+const DATA_FILE = "questions.json";
 const RESET_DAYS = 2;
 
 
@@ -30,7 +30,8 @@ const levelEl = document.getElementById("level");
 const xpBar = document.getElementById("xpBar");
 const xpText = document.getElementById("xpText");
 
-const choicesText = document.getElementById("choicesText");
+/* LEFT PANEL */
+const sessionList = document.getElementById("sessionList");
 
 
 /* =========================
@@ -81,6 +82,7 @@ function loadSession() {
 
 
 function saveSession() {
+
   localStorage.setItem(
     "verbSession",
     JSON.stringify(sessionStats)
@@ -161,8 +163,6 @@ function loadNext() {
   tryAgainBtn.style.display = "none";
 
   input.focus();
-
-  registerWord(currentQuestion);
 }
 
 
@@ -182,10 +182,6 @@ function registerWord(q) {
       count: 0
     };
   }
-
-  saveSession();
-
-  updatePanel();
 }
 
 
@@ -193,7 +189,10 @@ function countAnswer(q) {
 
   const key = q.en + "|" + q.jp;
 
-  if (!sessionStats.words[key]) return;
+  /* First time: register */
+  if (!sessionStats.words[key]) {
+    registerWord(q);
+  }
 
   sessionStats.words[key].count++;
 
@@ -209,7 +208,9 @@ function countAnswer(q) {
 
 function updatePanel() {
 
-  let html = "<strong>Session Words</strong><br><br>";
+  if (!sessionList) return;
+
+  sessionList.innerHTML = "";
 
   const list = Object.values(sessionStats.words);
 
@@ -217,13 +218,13 @@ function updatePanel() {
 
   for (const w of list) {
 
-    html += `
-      ${w.jp} / ${w.en}
-      : ${w.count}<br>
-    `;
-  }
+    const row = document.createElement("div");
 
-  choicesText.innerHTML = html;
+    row.textContent =
+      `${w.jp} / ${w.en} : ${w.count}`;
+
+    sessionList.appendChild(row);
+  }
 }
 
 
@@ -248,6 +249,7 @@ function checkAnswer() {
 
     xp++;
 
+    /* Only count AFTER answering */
     countAnswer(currentQuestion);
 
     if (xp >= level * 10) {
