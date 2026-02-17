@@ -1,0 +1,206 @@
+/* =========================
+   Visibility Helpers
+   ========================= */
+.hidden {
+  display: none !important;
+}
+
+.active {
+  display: flex;
+}
+
+/* =========================
+   Reset & Base
+   ========================= */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: "Comic Sans MS", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: radial-gradient(circle at top, #eef2ff, #e0e7ff);
+  color: #1e293b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================
+   English / Japanese Text
+   ========================= */
+#enText {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #1e3a8a;
+  margin-top: 0.2rem;
+}
+
+#jpText {
+  font-size: 1rem;
+  color: #475569;
+  font-weight: 350;
+}
+
+/* =========================
+   Page Title
+   ========================= */
+.page-title {
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+  color: #4f46e5;
+}
+
+/* =========================
+   Screens / Cards
+   ========================= */
+.screen {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 2rem 1.6rem;
+  box-shadow: 0 20px 40px rgba(79, 70, 229, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* =========================
+   Buttons
+   ========================= */
+button {
+  border: none;
+  border-radius: 999px;
+  padding: 12px 26px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+#startBtn,
+#nextBtn {
+  background: linear-gradient(90deg, #4f46e5, #6366f1);
+  color: white;
+  box-shadow: 0 6px 14px rgba(79, 70, 229, 0.35);
+}
+
+#nextBtn:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+  cursor: default;
+}
+
+#tryAgainBtn {
+  margin-top: 0.6rem;
+  background: linear-gradient(90deg, #ef4444, #f97316);
+  color: white;
+  box-shadow: 0 6px 14px rgba(239, 68, 68, 0.35);
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+/* =========================
+   Stats Panel
+   ========================= */
+#statsPanel {
+  width: 100%;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+/* =========================
+   XP Bar
+   ========================= */
+#xpBarContainer {
+  width: 100%;
+  height: 25px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 6px 0;
+}
+
+#xpBar {
+  height: 100%;
+  width: 10%;
+  background: linear-gradient(40deg, #FCEE21, #009245);
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 6px rgba(255,255,255,0.4);
+}
+
+/* Animated stripe overlay */
+#xpBar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.25) 0px,
+    rgba(255, 255, 255, 0.25) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+  background-size: 40px 40px;
+  animation: move 3s linear infinite;
+}
+
+/* XP animation */
+@keyframes move {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 40px 40px;
+  }
+}
+
+/* =========================
+   Inputs
+   ========================= */
+input {
+  width: 100%;
+  padding: 10px;
+  font-size: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid #c7d2fe;
+  margin: 0.6rem 0;
+  text-align: center;
+}
+
+input::placeholder {
+  color: #94a3b8;
+  font-size: 1.2rem;
+}
+
+input:focus {
+  outline: none;
+  border-color: #6366f1;
+  text-align: left;
+}
+
+/* =========================
+   Confetti
+   ========================= */
+#confettiCanvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* =========================
+   Footer
+   ========================= */
+footer {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
