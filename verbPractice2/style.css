@@ -1,24 +1,15 @@
 /* =========================
    Visibility Helpers
    ========================= */
-.hidden {
-  display: none !important;
-}
-
-.active {
-  display: flex;
-}
+.hidden { display: none !important; }
+.active { display: flex; }
 
 /* =========================
    Reset & Base
    ========================= */
-html, body {
-  height: 100%;
-  margin: 0;
-}
-
+html, body { height: 100%; margin: 0; }
 body {
-  font-family: "Comic Sans MS", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Comic Sans MS", system-ui, sans-serif;
   background: radial-gradient(circle at top, #eef2ff, #e0e7ff);
   color: #1e293b;
   display: flex;
@@ -27,120 +18,99 @@ body {
   justify-content: center;
 }
 
-/* =========================
-   Text & Title
-   ========================= */
-.page-title {
-  margin-bottom: 1rem;
-  font-size: 1.8rem;
-  color: #4f46e5;
-}
-
-#enText {
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: #1e3a8a;
-  margin-top: 0.2rem;
-}
-
-#jpText {
-  font-size: 1rem;
-  color: #475569;
-}
+.page-title { margin-bottom: 1rem; font-size: 1.8rem; color: #4f46e5; }
 
 /* =========================
-   Screens / Cards
+   Quiz Card & Sidebar
    ========================= */
 .screen {
-  width: 100%;
-  max-width: 420px;
-  background: #ffffff;
-  border-radius: 20px;
+  width: 100%; max-width: 420px;
+  background: #ffffff; border-radius: 20px;
   padding: 2rem 1.6rem;
   box-shadow: 0 20px 40px rgba(79, 70, 229, 0.25);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
 }
 
-/* VERY IMPORTANT: Required for Sidebar positioning */
-#quizScreen {
-  position: relative;
-}
+#quizScreen { position: relative; }
 
-/* =========================
-   Session Tracker (The Side Panel)
-   ========================= */
 #sessionPanel {
-  position: absolute;
-  left: -145px; /* Moves it to the left of the card */
-  top: 0;
-  width: 125px;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.8);
+  position: absolute; left: -145px; top: 0;
+  width: 125px; height: 100%;
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(4px);
-  border-radius: 15px;
-  padding: 0.8rem 0.5rem;
+  border-radius: 15px; padding: 0.8rem 0.5rem;
   box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-  font-size: 0.75rem;
-  overflow-y: auto;
-  text-align: left;
+  font-size: 0.75rem; overflow-y: auto; text-align: left;
 }
 
 #sessionPanel h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 0.85rem;
-  color: #4f46e5;
-  text-align: center;
-  border-bottom: 1px solid #e2e8f0;
+  margin: 0 0 0.5rem 0; font-size: 0.85rem; color: #4f46e5;
+  text-align: center; border-bottom: 1px solid #e2e8f0;
 }
 
 .session-row {
-  margin-bottom: 4px;
-  padding: 4px;
-  background: #f1f5f9;
-  border-radius: 4px;
-  color: #334155;
+  margin-bottom: 4px; padding: 4px; border-radius: 4px;
+  background: #f1f5f9; color: #334155;
 }
 
-/* Responsive: Hide sidebar on small phones to prevent overlap */
-@media (max-width: 700px) {
-  #sessionPanel {
-    display: none; 
-  }
-}
+/* Hide sidebar on small mobile */
+@media (max-width: 700px) { #sessionPanel { display: none; } }
 
 /* =========================
-   Stats, Bars & Buttons
+   Gameplay Elements
    ========================= */
-#statsPanel { width: 100%; margin-bottom: 1rem; font-size: 0.9rem; }
+#enText { font-size: 1.6rem; font-weight: 600; color: #1e3a8a; margin-top: 0.2rem; }
+#jpText { font-size: 1rem; color: #475569; }
 
+#statsPanel { width: 100%; margin-bottom: 1rem; font-size: 0.9rem; }
 #xpBarContainer {
   width: 100%; height: 25px; background: #e5e7eb;
   border-radius: 999px; overflow: hidden; margin: 6px 0;
 }
-
 #xpBar {
   height: 100%; width: 0%; 
   background: linear-gradient(40deg, #FCEE21, #009245);
+  transition: width 0.3s ease;
+}
+
+input {
+  width: 100%; padding: 12px; font-size: 1.4rem;
+  border-radius: 10px; border: 2px solid #c7d2fe;
+  margin: 1rem 0; text-align: center; outline: none;
+}
+
+/* Shake Animation */
+.shake-input {
+  animation: shake 0.4s ease-in-out;
+  border-color: #ef4444 !important;
+  background-color: #fef2f2;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+#feedback { font-weight: bold; margin-bottom: 1rem; min-height: 1.5rem; }
+.correct-style { color: #10b981; }
+.wrong-style { color: #ef4444; }
+
+/* =========================
+   Buttons & Container
+   ========================= */
+.button-container {
+  width: 100%; min-height: 60px;
+  display: flex; justify-content: center; align-items: center;
 }
 
 button {
-  border: none; border-radius: 999px; padding: 12px 26px;
+  border: none; border-radius: 999px; padding: 12px 30px;
   font-size: 1rem; font-weight: bold; cursor: pointer;
-  transition: transform 0.15s;
+  transition: transform 0.1s;
 }
+button:active { transform: scale(0.95); }
 
 #startBtn, #nextBtn { background: #4f46e5; color: white; }
-#tryAgainBtn { background: #ef4444; color: white; margin-top:10px; }
-
-input {
-  width: 100%; padding: 10px; font-size: 1.4rem;
-  border-radius: 10px; border: 1px solid #c7d2fe;
-  margin: 1rem 0; text-align: center;
-}
-
-#feedback { margin: 10px 0; font-weight: bold; min-height: 1.5rem; }
+#tryAgainBtn { background: #ef4444; color: white; }
 
 footer { margin-top: 2rem; font-size: 0.8rem; color: #94a3b8; }
