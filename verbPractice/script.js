@@ -224,7 +224,6 @@ function registerWord(q) {
 
     sessionStats.words[key] = {
       en: q.en,
-      jp: q.jp,
       count: 0
     };
   }
