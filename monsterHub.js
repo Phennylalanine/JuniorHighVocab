@@ -35,9 +35,7 @@ function initMonsterHub() {
    * "M" (Monster) quizzes have a higher weight (0.5) than "S" (Standard) quizzes (0.3).
    */
   const QUIZ_DATA = [
-    "buildingSlevelr", "eventSlevelr", "placeSlevelr", "oppositeSlevelr",
-    "schoolEventSlevelr", "directionsLevelr", "buildingMlevelr",
-    "eventMlevelr", "placesMlevelr", "oppositeMlevelr", "schoolEventMlevelr",
+    "verbPractice_level", "verbPractice2_level", "verbPractice3_level", "verbPractice4_level", "verbPractice5_level",
   ].map((key) => ({ 
     key, 
     multiplier: key.includes("M") ? 0.5 : 0.3 
