@@ -3,6 +3,7 @@
 ===================== */
 const QUIZ_ID = "verbs_part1";
 const DATA_FILE = "./questions.json"; 
+const LOCAL_LEVEL_KEY = "verbPractice_level";
 const RESET_DAYS = 2;   // How often to reset progress
 const MASTER_LIMIT = 3; // How many correct answers to "master" a word
 
@@ -127,6 +128,9 @@ function updateGlobalProgress() {
   }
 
   saveGlobalProfile();
+
+  // Sync level to the card on index.html
+  localStorage.setItem(LOCAL_LEVEL_KEY, globalProfile.level);
 }
 
 /* =====================
@@ -261,6 +265,9 @@ function init() {
   loadQuestions();
   updatePanel();
   updateStats();
+  
+  // Update local level storage on load
+  localStorage.setItem(LOCAL_LEVEL_KEY, globalProfile.level);
 }
 
 startBtn.addEventListener("click", startQuiz);
@@ -272,5 +279,6 @@ tryAgainBtn.addEventListener("click", () => {
   feedback.textContent = " ";
   tryAgainBtn.style.display = "none";
 });
+
 
 init();
