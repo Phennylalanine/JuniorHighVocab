@@ -28,9 +28,6 @@ const xpText = document.getElementById("xpText");
 const inProgressList = document.getElementById("inProgressList");
 const masteredList = document.getElementById("masteredList");
 
-/* =========================
-   Speech System
-   ========================= */
 function speak(text) {
   window.speechSynthesis.cancel();
   const msg = new SpeechSynthesisUtterance(text);
@@ -39,28 +36,22 @@ function speak(text) {
   window.speechSynthesis.speak(msg);
 }
 
-/* =========================
-   Core Logic
-   ========================= */
 async function init() {
-  // Load Global Profile
   const savedProfile = localStorage.getItem("quiz_global_profile");
   if (savedProfile) globalProfile = JSON.parse(savedProfile);
   
-  // Load Session Stats (reset every 48 hours)
   const savedSession = localStorage.getItem("quiz_session_" + QUIZ_ID);
   if (savedSession) {
     const data = JSON.parse(savedSession);
     if ((Date.now() - data.created) < 172800000) sessionStats = data;
   }
 
-  // Load Questions
   try {
     const res = await fetch(DATA_FILE);
     const data = await res.json();
     questions = data.questions;
   } catch (e) {
-    console.error("Critical Error: Could not load questions.json", e);
+    console.error("Data load error", e);
   }
 
   updateStats();
@@ -74,7 +65,7 @@ function loadNext() {
   });
 
   if (pool.length === 0) {
-    alert("Incredible! You have mastered all the verbs in this level!");
+    alert("Incredible! You have mastered all the verbs!");
     location.reload();
     return;
   }
@@ -85,10 +76,11 @@ function loadNext() {
   
   speak(currentQuestion.en);
 
-  // UI Reset
+  // Reset UI
   input.value = "";
   input.disabled = false;
-  input.focus(); // Focus back to typing
+  input.classList.remove("success-input", "shake-input");
+  input.focus();
   feedback.textContent = "";
   nextBtn.classList.add("hidden");
   tryAgainBtn.classList.add("hidden");
@@ -97,21 +89,26 @@ function loadNext() {
 function checkAnswer() {
   const user = input.value.trim().toLowerCase();
   const correct = currentQuestion.en.toLowerCase();
-  if (!user) return;
+  if (!user || input.disabled) return;
 
   if (user === correct) {
+    // 1. Visual/Audio Feedback
     feedback.textContent = "✓ Correct!";
     feedback.className = "correct-style";
+    input.classList.add("success-input");
+    input.disabled = true;
+
+    // 2. Logic Update
     score++; combo++;
     updateMastery(currentQuestion, true);
     
-    input.disabled = true; // Lock the input
-    nextBtn.classList.remove("hidden");
-    tryAgainBtn.classList.add("hidden");
-    
-    // UI FOCUS: MOVE TO NEXT BUTTON
-    nextBtn.focus(); 
+    // 3. AUTO-ADVANCE after animation
+    setTimeout(() => {
+        loadNext();
+    }, 800); 
+
   } else {
+    // failure feedback
     input.classList.add("shake-input");
     setTimeout(() => input.classList.remove("shake-input"), 400);
     
@@ -121,22 +118,15 @@ function checkAnswer() {
     updateMastery(currentQuestion, false);
     
     tryAgainBtn.classList.remove("hidden");
-    nextBtn.classList.add("hidden");
-    
-    // UI FOCUS: MOVE TO TRY AGAIN BUTTON
-    tryAgainBtn.focus();
+    tryAgainBtn.focus(); // Focus so Enter triggers a retry
   }
   updateStats();
 }
 
-/* =========================
-   Data Management
-   ========================= */
+/* DATA MANAGEMENT */
 function updateMastery(q, isCorrect) {
   const key = q.en + "|" + q.jp;
-  if (!sessionStats.words[key]) {
-    sessionStats.words[key] = { en: q.en, jp: q.jp, correct: 0 };
-  }
+  if (!sessionStats.words[key]) sessionStats.words[key] = { en: q.en, jp: q.jp, correct: 0 };
   
   if (isCorrect) {
     sessionStats.words[key].correct++;
@@ -188,9 +178,7 @@ function updatePanel() {
     });
 }
 
-/* =========================
-   Init & Event Listeners
-   ========================= */
+/* EVENT LISTENERS */
 startBtn.addEventListener("click", () => {
   document.getElementById("startScreen").classList.add("hidden");
   document.getElementById("quizScreen").classList.remove("hidden");
@@ -202,7 +190,8 @@ nextBtn.addEventListener("click", loadNext);
 
 tryAgainBtn.addEventListener("click", () => {
   input.value = "";
-  input.focus(); // Jump back to typing
+  input.classList.remove("shake-input");
+  input.focus();
   feedback.textContent = "";
   tryAgainBtn.classList.add("hidden");
 });
