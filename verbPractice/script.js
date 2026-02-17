@@ -2,7 +2,7 @@
    CONFIG
 ========================= */
 
-const DATA_FILE = "verb1.json"; // your JSON file
+const DATA_FILE = "questions.json"; // your JSON file
 const RESET_DAYS = 2;
 
 
