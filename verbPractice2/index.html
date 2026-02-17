@@ -11,19 +11,19 @@
 
 <h1 class="page-title">動詞練習</h1>
 
-<!-- Start Screen -->
+<!-- 1. Start Screen - Correctly Closed -->
 <div id="startScreen" class="screen active">
   <button id="startBtn">Start Quiz</button>
-
-
-<!-- Quiz Screen -->
-<div id="quizScreen" class="screen hidden">
-  </div>
-  <!-- Session Panel -->
-   <div id="sessionPanel">
-  <h3>Session</h3>
-  <div id="sessionList"></div>
 </div>
+
+<!-- 2. Quiz Screen - Everything below is INSIDE the Quiz Screen -->
+<div id="quizScreen" class="screen hidden">
+  
+  <!-- Session Panel (Moved inside so it only shows during the quiz) -->
+  <div id="sessionPanel">
+    <h3>Mastery Progress</h3>
+    <div id="sessionList"></div>
+  </div>
   
   <!-- Stats Panel -->
   <div id="statsPanel">
@@ -31,11 +31,9 @@
       <div>
         <strong>Level:</strong> <span id="level">1</span>
       </div>
-
       <div id="xpBarContainer">
         <div id="xpBar"></div>
       </div>
-
       <small id="xpText">0 / 10 XP</small>
     </div>
 
@@ -56,12 +54,11 @@
   />
 
   <div id="feedback"></div>
-
   <div id="choicesText"></div>
 
   <button id="nextBtn" disabled>Next</button>
   <button id="tryAgainBtn" style="display:none;">Try Again</button>
-</div>
+</div> <!-- This correctly closes the quizScreen -->
 
 <canvas id="confettiCanvas"></canvas>
 
