@@ -18,9 +18,36 @@ const QUIZZES = [
     title: "Verbs Part 1",
     jp: "現在形と過去分詞",
     url: "https://phennylalanine.github.io/JuniorHighVocab/verbPractice/",
-    levelKey: "verb1Levelr", // Key used to track progress in localStorage
+    levelKey: "verbPractice_level", // Key used to track progress in localStorage
   },
-  
+   {
+    icon: "🏃🏃",
+    title: "Verbs Part 2",
+    jp: "現在形と過去分詞",
+    url: "https://phennylalanine.github.io/JuniorHighVocab/verbPractice2/",
+    levelKey: "verbPractice2_level", // Key used to track progress in localStorage
+  },
+    {
+    icon: "🏃🏃🏃",
+    title: "Verbs Part 3",
+    jp: "現在形と過去分詞",
+    url: "https://phennylalanine.github.io/JuniorHighVocab/verbPractice3/",
+    levelKey: "verbPractice3_level", // Key used to track progress in localStorage
+  },
+    {
+    icon: "🏃🏃🏃🏃",
+    title: "Verbs Part 4",
+    jp: "現在形と過去分詞",
+    url: "https://phennylalanine.github.io/JuniorHighVocab/verbPractice4/",
+    levelKey: "verbPractice4_level", // Key used to track progress in localStorage
+  },
+      {
+    icon: "🏃🏃🏃🏃🏃",
+    title: "Verbs Part 5",
+    jp: "現在形と過去分詞",
+    url: "https://phennylalanine.github.io/JuniorHighVocab/verbPractice5/",
+    levelKey: "verbPractice5_level", // Key used to track progress in localStorage
+  },
   // Add more quiz objects here...
 ];
 
