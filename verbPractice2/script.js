@@ -143,14 +143,15 @@ function checkAnswer() {
      ========================= */
   else {
 
-    // Reset shake animation - remove both classes first
-    input.classList.remove("success-input", "shake-input");
-    
-    // Force browser reflow to reset animation
-    void input.offsetWidth;
-    
-    // Now add shake animation
-    input.classList.add("shake-input");
+    // Restart animation by cloning the input
+const newInput = input.cloneNode(true);
+input.parentNode.replaceChild(newInput, input);
+
+// Rebind input reference
+input = newInput;
+
+input.classList.add("shake-input");
+
     
     // Clean up animation class after it completes
     setTimeout(() => {
