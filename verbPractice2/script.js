@@ -143,14 +143,15 @@ function checkAnswer() {
      ========================= */
   else {
 
-    // Restart animation by cloning the input
-const newInput = input.cloneNode(true);
-input.parentNode.replaceChild(newInput, input);
+   // Restart shake animation safely
+input.classList.remove("shake-input");
 
-// Rebind input reference
-input = newInput;
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    input.classList.add("shake-input");
+  });
+});
 
-input.classList.add("shake-input");
 
     
     // Clean up animation class after it completes
