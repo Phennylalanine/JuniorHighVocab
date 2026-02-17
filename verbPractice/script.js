@@ -1,18 +1,93 @@
-/* =========================
+/* =====================
+   QUIZ ID
+===================== */
+
+const QUIZ_ID = "verbs_part1";
+
+
+/* =====================
    CONFIG
-========================= */
+===================== */
 
 const DATA_FILE = "questions.json";
 const RESET_DAYS = 2;
-const MAX_PER_QUESTION = 3;
+const MASTER_LIMIT = 3;
 
 
-/* =========================
+/* =====================
+   GLOBAL PROFILE
+===================== */
+
+const GLOBAL_PROFILE_KEY = "quiz_global_profile";
+
+let globalProfile = {
+  level: 1,
+  xp: 0,
+  totalCorrect: 0
+};
+
+function loadGlobalProfile() {
+
+  const saved = localStorage.getItem(GLOBAL_PROFILE_KEY);
+
+  if (saved) {
+    globalProfile = JSON.parse(saved);
+  }
+}
+
+function saveGlobalProfile() {
+
+  localStorage.setItem(
+    GLOBAL_PROFILE_KEY,
+    JSON.stringify(globalProfile)
+  );
+}
+
+
+/* =====================
+   SESSION STORAGE
+===================== */
+
+const SESSION_KEY = "quiz_session_" + QUIZ_ID;
+
+let sessionStats = {
+  created: Date.now(),
+  words: {}
+};
+
+
+function loadSession() {
+
+  const saved = localStorage.getItem(SESSION_KEY);
+
+  if (!saved) return;
+
+  const data = JSON.parse(saved);
+
+  const age = Date.now() - data.created;
+  const maxAge = RESET_DAYS * 86400000;
+
+  if (age > maxAge) {
+    localStorage.removeItem(SESSION_KEY);
+    return;
+  }
+
+  sessionStats = data;
+}
+
+
+function saveSession() {
+
+  localStorage.setItem(
+    SESSION_KEY,
+    JSON.stringify(sessionStats)
+  );
+}
+
+
+/* =====================
    ELEMENTS
-========================= */
-
-const startScreen = document.getElementById("startScreen");
-const quizScreen = document.getElementById("quizScreen");
+===================== */
 
 const startBtn = document.getElementById("startBtn");
 const nextBtn = document.getElementById("nextBtn");
@@ -31,87 +106,23 @@ const levelEl = document.getElementById("level");
 const xpBar = document.getElementById("xpBar");
 const xpText = document.getElementById("xpText");
 
-/* LEFT PANEL */
 const sessionList = document.getElementById("sessionList");
 
 
-/* =========================
+/* =====================
    GAME STATE
-========================= */
+===================== */
 
 let questions = [];
 let currentQuestion = null;
 
 let score = 0;
 let combo = 0;
-let xp = 0;
-let level = 1;
 
 
-/* =========================
-   SESSION TRACKING
-========================= */
-
-let sessionStats = {
-  created: Date.now(),
-  words: {},
-  progress: {} // correct count per question
-};
-
-
-/* =========================
-   STORAGE
-========================= */
-
-function loadSession() {
-
-  const saved = localStorage.getItem("verbSession");
-
-  if (!saved) return;
-
-  const data = JSON.parse(saved);
-
-  const age = Date.now() - data.created;
-  const maxAge = RESET_DAYS * 24 * 60 * 60 * 1000;
-
-  if (age > maxAge) {
-
-    localStorage.removeItem("verbSession");
-
-    sessionStats = {
-      created: Date.now(),
-      words: {},
-      progress: {}
-    };
-
-    return;
-  }
-
-  sessionStats = data;
-}
-
-
-function saveSession() {
-
-  localStorage.setItem(
-    "verbSession",
-    JSON.stringify(sessionStats)
-  );
-}
-
-
-/* =========================
-   HELPERS
-========================= */
-
-function getQuestionKey(q) {
-  return q.en + "|" + q.jp;
-}
-
-
-/* =========================
-   LOAD JSON
-========================= */
+/* =====================
+   LOAD QUESTIONS
+===================== */
 
 async function loadQuestions() {
 
@@ -124,131 +135,108 @@ async function loadQuestions() {
 }
 
 
-/* =========================
-   UI
-========================= */
+/* =====================
+   WORD TRACKING
+===================== */
 
-function showQuiz() {
+function updateWord(q, isCorrect) {
 
-  startScreen.classList.add("hidden");
-  quizScreen.classList.remove("hidden");
+  const key = q.en + "|" + q.jp;
 
-  loadNext();
+  if (!sessionStats.words[key]) {
+
+    sessionStats.words[key] = {
+      en: q.en,
+      jp: q.jp,
+      correct: 0
+    };
+  }
+
+  if (isCorrect) {
+
+    sessionStats.words[key].correct++;
+
+    updateGlobalProgress();
+
+  } else {
+
+    sessionStats.words[key].correct =
+      Math.max(0, sessionStats.words[key].correct - 1);
+  }
+
+  saveSession();
+  updatePanel();
 }
 
+
+function updateGlobalProgress() {
+
+  globalProfile.xp++;
+  globalProfile.totalCorrect++;
+
+  const needed = 10 + globalProfile.level * 3;
+
+  if (globalProfile.xp >= needed) {
+
+    globalProfile.xp = 0;
+    globalProfile.level++;
+  }
+
+  saveGlobalProfile();
+}
+
+
+/* =====================
+   QUESTION POOL
+===================== */
+
+function getAvailableQuestions() {
+
+  return questions.filter(q => {
+
+    const key = q.en + "|" + q.jp;
+    const data = sessionStats.words[key];
+
+    if (!data) return true;
+
+    return data.correct < MASTER_LIMIT;
+  });
+}
+
+
+function getRandomQuestion() {
+
+  const pool = getAvailableQuestions();
+
+  if (pool.length === 0) {
+    finishQuiz();
+    return null;
+  }
+
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+
+/* =====================
+   UI
+===================== */
 
 function updateStats() {
 
   pointsEl.textContent = score;
   comboEl.textContent = combo;
 
-  levelEl.textContent = level;
+  levelEl.textContent = globalProfile.level;
 
-  const need = level * 10;
+  const needed = 10 + globalProfile.level * 3;
 
-  xpText.textContent = `${xp} / ${need} XP`;
+  xpText.textContent =
+    `${globalProfile.xp} / ${needed}`;
 
-  const percent = Math.min((xp / need) * 100, 100);
-
-  xpBar.style.width = percent + "%";
+  xpBar.style.width =
+    (globalProfile.xp / needed) * 100 + "%";
 }
 
-
-/* =========================
-   QUESTION LOGIC
-========================= */
-
-function getRandomQuestion() {
-
-  const available = questions.filter(q => {
-
-    const key = getQuestionKey(q);
-
-    const count = sessionStats.progress[key] || 0;
-
-    return count < MAX_PER_QUESTION;
-  });
-
-  if (available.length === 0) {
-    endSession();
-    return null;
-  }
-
-  const index = Math.floor(Math.random() * available.length);
-
-  return available[index];
-}
-
-
-function loadNext() {
-
-  const q = getRandomQuestion();
-
-  if (!q) return;
-
-  currentQuestion = q;
-
-  jpText.textContent = q.jp;
-  enText.textContent = q.en;
-
-  input.value = "";
-  input.disabled = false;
-
-  feedback.textContent = "";
-
-  nextBtn.disabled = true;
-  tryAgainBtn.style.display = "none";
-
-  input.focus();
-}
-
-
-function endSession() {
-
-  quizScreen.classList.add("hidden");
-  startScreen.classList.remove("hidden");
-
-  alert("All questions completed for today.");
-}
-
-
-/* =========================
-   WORD TRACKING
-========================= */
-
-function registerWord(q) {
-
-  const key = getQuestionKey(q);
-
-  if (!sessionStats.words[key]) {
-
-    sessionStats.words[key] = {
-      en: q.en,
-      count: 0
-    };
-  }
-}
-
-
-function countAnswer(q) {
-
-  const key = getQuestionKey(q);
-
-  if (!sessionStats.words[key]) {
-    registerWord(q);
-  }
-
-  sessionStats.words[key].count++;
-
-  saveSession();
-
-  updatePanel();
-}
-
-
-/* =========================
-   SIDE PANEL
-========================= */
 
 function updatePanel() {
 
@@ -258,23 +246,44 @@ function updatePanel() {
 
   const list = Object.values(sessionStats.words);
 
-  list.sort((a, b) => b.count - a.count);
+  list.sort((a, b) => b.correct - a.correct);
 
   for (const w of list) {
 
     const row = document.createElement("div");
 
     row.textContent =
-      `${w.jp} / ${w.en} : ${w.count}`;
+      `${w.jp} / ${w.en} : ${w.correct}`;
 
     sessionList.appendChild(row);
   }
 }
 
 
-/* =========================
-   ANSWER CHECK
-========================= */
+/* =====================
+   QUIZ FLOW
+===================== */
+
+function loadNext() {
+
+  currentQuestion = getRandomQuestion();
+
+  if (!currentQuestion) return;
+
+  jpText.textContent = currentQuestion.jp;
+  enText.textContent = currentQuestion.en;
+
+  input.value = "";
+  input.disabled = false;
+
+  feedback.textContent = " ";
+  nextBtn.disabled = true;
+
+  tryAgainBtn.style.display = "none";
+
+  input.focus();
+}
+
 
 function checkAnswer() {
 
@@ -283,76 +292,52 @@ function checkAnswer() {
 
   if (!user) return;
 
-  const key = getQuestionKey(currentQuestion);
-
-  if (!sessionStats.progress[key]) {
-    sessionStats.progress[key] = 0;
-  }
-
-
-  /* CORRECT */
   if (user === correct) {
 
     feedback.textContent = "✓ Correct";
-    feedback.style.color = "green";
 
     score++;
     combo++;
 
-    xp++;
-
-    /* Increase progress */
-    sessionStats.progress[key]++;
-
-    if (sessionStats.progress[key] > MAX_PER_QUESTION) {
-      sessionStats.progress[key] = MAX_PER_QUESTION;
-    }
-
-    /* Only count AFTER answering */
-    countAnswer(currentQuestion);
-
-    if (xp >= level * 10) {
-      xp = 0;
-      level++;
-    }
+    updateWord(currentQuestion, true);
 
     input.disabled = true;
     nextBtn.disabled = false;
-  }
 
-
-  /* WRONG */
-  else {
+  } else {
 
     feedback.textContent =
       `✗ Correct: ${currentQuestion.en}`;
 
-    feedback.style.color = "red";
-
     combo = 0;
 
-    /* Decrease progress */
-    sessionStats.progress[key]--;
-
-    if (sessionStats.progress[key] < 0) {
-      sessionStats.progress[key] = 0;
-    }
+    updateWord(currentQuestion, false);
 
     tryAgainBtn.style.display = "inline-block";
   }
 
-
-  saveSession();
   updateStats();
 }
 
 
-/* =========================
+function finishQuiz() {
+
+  alert("All words completed for today!");
+
+  localStorage.setItem(
+    "quiz_cooldown_" + QUIZ_ID,
+    Date.now()
+  );
+
+  location.reload();
+}
+
+
+/* =====================
    EVENTS
-========================= */
+===================== */
 
-startBtn.addEventListener("click", showQuiz);
-
+startBtn.addEventListener("click", loadNext);
 
 input.addEventListener("keydown", e => {
 
@@ -361,29 +346,28 @@ input.addEventListener("keydown", e => {
   }
 });
 
-
 nextBtn.addEventListener("click", loadNext);
-
 
 tryAgainBtn.addEventListener("click", () => {
 
   input.value = "";
   input.focus();
 
-  feedback.textContent = "";
+  feedback.textContent = " ";
 
   tryAgainBtn.style.display = "none";
 });
 
 
-/* =========================
+/* =====================
    INIT
-========================= */
+===================== */
 
 function init() {
 
   startBtn.disabled = true;
 
+  loadGlobalProfile();
   loadSession();
 
   loadQuestions();
