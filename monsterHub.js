@@ -38,7 +38,7 @@ function initMonsterHub() {
     "verbPractice_level", "verbPractice2_level", "verbPractice3_level", "verbPractice4_level", "verbPractice5_level","verbTest_level",
   ].map((key) => ({ 
     key, 
-    multiplier: key.includes("_") ? 0.75 : 0.3 
+    multiplier: key.includes("_") ? 0.5 : 0.3 
   }));
 
   // Helper object for localStorage interactions
