@@ -87,20 +87,27 @@ function initMonsterHub() {
   /**
    * Renders the calculated level and current monster image to the DOM
    */
-  function render() {
+ function render() {
     container.innerHTML = "";
+    let file = localStorage.getItem("selectedMonster");
 
-    // Show initial egg if level is low, otherwise show the user's selected monster
-    const file =
-      overallLevel < LEVELS.EGG
-        ? "shadowPlantEgg.png"
-        : localStorage.getItem("selectedMonster");
-
-    if (file) {
-      container.append(makeImg(`${IMG_BASE}${file}`));
-      container.append(makeLabel(`レベル：${overallLevel}`));
+    // SCALEABLE EVOLUTION LOGIC
+    if (overallLevel < 5) {
+        file = "shadowPlantEgg.png";
+    } else if (overallLevel < 15) {
+        // Levels 5-14: Show Slime if they haven't evolved yet
+        file = file || "plantSlime_1.png"; 
+    } else if (overallLevel < 30) {
+        // Levels 15-29: Show Stage 2 if they haven't picked one
+        file = file || "plantEvo_2A.png";
+    } else {
+        // Level 30+: Show a final form if they haven't picked one
+        file = file || "plantEvo3A.png";
     }
-  }
+
+    container.append(makeImg(`${IMG_BASE}${file}`));
+    container.append(makeLabel(`レベル：${Math.floor(overallLevel)}`));
+}
 
   render();
 }
