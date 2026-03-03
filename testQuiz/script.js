@@ -198,4 +198,49 @@ function updatePanel() {
   masteredList.innerHTML = "";
 
   Object.values(sessionStats.words)
-    .sort((a,b) => b.correct - a.
+    .sort((a,b) => b.correct - a.correct)
+    .forEach(w => {
+      const row = document.createElement("div");
+      row.className = "session-row";
+      row.textContent = `${w.en}: ${w.correct}/${MASTER_LIMIT}`;
+      
+      if (w.correct >= MASTER_LIMIT) {
+        row.classList.add("score-mastered");
+        masteredList.appendChild(row);
+      } else {
+        if (w.correct === 0) row.classList.add("score-0");
+        else if (w.correct === 1) row.classList.add("score-1");
+        else if (w.correct === 2) row.classList.add("score-2");
+        inProgressList.appendChild(row);
+      }
+    });
+}
+
+/* =========================
+   Event Listeners
+   ========================= */
+startBtn.addEventListener("click", () => {
+  document.getElementById("startScreen").classList.add("hidden");
+  document.getElementById("quizScreen").classList.remove("hidden");
+  document.getElementById("quizScreen").classList.add("active");
+  loadNext();
+});
+
+nextBtn.addEventListener("click", loadNext);
+
+tryAgainBtn.addEventListener("click", () => {
+  input.value = "";
+  input.classList.remove("shake-input");
+  input.focus();
+  feedback.textContent = "";
+  tryAgainBtn.classList.add("hidden");
+});
+
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    checkAnswer();
+  }
+});
+
+// Run
+init();
