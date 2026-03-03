@@ -107,6 +107,9 @@ function loadNext() {
   tryAgainBtn.classList.add("hidden");
 }
 
+/* =========================
+   ANSWER CHECKING (Updated for Unlearnt Loop)
+   ========================= */
 function checkAnswer() {
   const user = input.value.trim().toLowerCase();
   const correct = currentQuestion.en.toLowerCase();
@@ -123,10 +126,11 @@ function checkAnswer() {
     
     setTimeout(() => { loadNext(); }, 800); 
   } else {
+    // 1. Visually shake on error
     input.classList.add("shake-input");
     setTimeout(() => input.classList.remove("shake-input"), 400);
     
-    // Character comparison logic
+    // 2. Character comparison logic for feedback
     let comparison = "";
     const maxLength = Math.max(user.length, correct.length);
     for (let i = 0; i < maxLength; i++) {
@@ -137,10 +141,16 @@ function checkAnswer() {
         else if (!uChar) comparison += `<span style="color: #94a3b8;">_</span>`;
     }
 
-    feedback.innerHTML = `✖️ <strong>Wrong!</strong><br>You: <code>${comparison}</code><br>Target: <span style="color: #10b981;">${correct}</span>`;
+    // 3. IMMEDIATELY REVEAL ANSWER (Switching to Teaching visuals)
+    enText.textContent = currentQuestion.en; 
+    enText.style.opacity = "1";
+    feedback.innerHTML = `✖️ <strong>Wrong!</strong><br>You: <code>${comparison}</code><br><span style="color: #6366f1;">Mistake detected! Type the word carefully to re-learn it.</span>`;
+
+    // 4. Update Stats & Reset Mastery
     combo = 0;
     updateProgress(currentQuestion, false);
     
+    // 5. Force the user to "Try Again" with the answer visible
     tryAgainBtn.classList.remove("hidden");
     tryAgainBtn.focus();
   }
@@ -163,7 +173,7 @@ function updateProgress(q, isCorrect) {
       localStorage.setItem(QUIZ_ID + "_level", globalProfile.level);
     }
   } else {
-    // RESET TO TEACHING MODE (0) on error
+    // CRITICAL: Reset word to 0 (Unlearnt) on any mistake
     sessionStats.words[key].correct = 0;
   }
   
@@ -188,49 +198,4 @@ function updatePanel() {
   masteredList.innerHTML = "";
 
   Object.values(sessionStats.words)
-    .sort((a,b) => b.correct - a.correct)
-    .forEach(w => {
-      const row = document.createElement("div");
-      row.className = "session-row";
-      row.textContent = `${w.en}: ${w.correct}/${MASTER_LIMIT}`;
-      
-      if (w.correct >= MASTER_LIMIT) {
-        row.classList.add("score-mastered");
-        masteredList.appendChild(row);
-      } else {
-        if (w.correct === 0) row.classList.add("score-0");
-        else if (w.correct === 1) row.classList.add("score-1");
-        else if (w.correct === 2) row.classList.add("score-2");
-        inProgressList.appendChild(row);
-      }
-    });
-}
-
-/* =========================
-   Event Listeners
-   ========================= */
-startBtn.addEventListener("click", () => {
-  document.getElementById("startScreen").classList.add("hidden");
-  document.getElementById("quizScreen").classList.remove("hidden");
-  document.getElementById("quizScreen").classList.add("active");
-  loadNext();
-});
-
-nextBtn.addEventListener("click", loadNext);
-
-tryAgainBtn.addEventListener("click", () => {
-  input.value = "";
-  input.classList.remove("shake-input");
-  input.focus();
-  feedback.textContent = "";
-  tryAgainBtn.classList.add("hidden");
-});
-
-input.addEventListener("keydown", e => {
-  if (e.key === "Enter") {
-    checkAnswer();
-  }
-});
-
-// Run
-init();
+    .sort((a,b) => b.correct - a.
