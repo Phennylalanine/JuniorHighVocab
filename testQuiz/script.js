@@ -1,7 +1,7 @@
 /* =========================
    Configuration & State
    ========================= */
-const QUIZ_ID = "verbTest; 
+const QUIZ_ID = "verbTest"; 
 const DATA_FILE = "./questions.json"; 
 const MASTER_LIMIT = 3; // 1 level to Teach + 2 levels to Test
 
