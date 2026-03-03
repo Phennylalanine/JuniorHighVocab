@@ -1,58 +1,46 @@
 /**
  * monsterHub.js
- * Handles the "Total Level" logic and the visual representation 
- * of the user's progress (Monster evolution).
+ * Handles the "Total Level" logic and monster evolution system
+ * (with branch locking: plant / shadow).
  */
 
 function initMonsterHub() {
   const container = document.getElementById("overallLevel");
   const IMG_BASE = "./monster_image/";
 
-  // Thresholds for monster evolution stages
-  const LEVELS = { EGG: 5, SLIME: 10, EVO2: 20 };
+  /* -----------------------------
+     QUIZ CONFIG
+  ----------------------------- */
 
-  // Mapping of internal file identifiers to Japanese display names
-  const IMAGE_NAMES = {
-    shadowPlantEgg: "ヤミタマ",
-    plantSlime_1: "ハナゴロ",
-    shadowSlime_1: "カゲモチ",
-    plantEvo_2A: "ネッコン",
-    plantEvo_2B: "モリフワ",
-    shadowEvo_2A: "スミボウ",
-    shadowEvo_2B: "ヨルビト",
-    shadowEvo3A: "シャドウロウ",
-    shadowEvo3B: "グルムドン",
-    shadowEvo3C: "ウィスパップ",
-    shadowEvo3D: "シャドピク",
-    plantEvo3A: "ハナリコ",
-    plantEvo3B: "ツルケン",
-    plantEvo3C: "カメキノ",
-    plantEvo3D: "キカブン",
-  };
-
-  /**
-   * Configuration for how different quizzes contribute to the Total Level.
-   * "M" (Monster) quizzes have a higher weight (0.5) than "S" (Standard) quizzes (0.3).
-   */
   const QUIZ_DATA = [
-    "verbPractice_level", "verbPractice2_level", "verbPractice3_level", "verbPractice4_level", "verbPractice5_level","verbTest_level",
-  ].map((key) => ({ 
-    key, 
-    multiplier: key.includes("_") ? 0.5 : 0.3 
+    "verbPractice_level",
+    "verbPractice2_level",
+    "verbPractice3_level",
+    "verbPractice4_level",
+    "verbPractice5_level",
+    "verbTest_level",
+  ].map((key) => ({
+    key,
+    multiplier: key.includes("_") ? 0.5 : 0.3,
   }));
 
-  // Helper object for localStorage interactions
+  /* -----------------------------
+     LOCAL STORAGE HELPERS
+  ----------------------------- */
+
   const LS = {
     get: (k) => localStorage.getItem(k),
     set: (k, v) => localStorage.setItem(k, v),
   };
 
-  // Create an object of current levels retrieved from storage
+  /* -----------------------------
+     GET QUIZ LEVELS
+  ----------------------------- */
+
   const storedLevels = Object.fromEntries(
     QUIZ_DATA.map(({ key }) => [key, parseInt(LS.get(key)) || 0])
   );
 
-  // Calculate the weighted total level, rounded down to the nearest integer
   const overallLevel = Math.floor(
     QUIZ_DATA.reduce(
       (sum, { key, multiplier }) => sum + storedLevels[key] * multiplier,
@@ -60,10 +48,10 @@ function initMonsterHub() {
     )
   );
 
-  /**
-   * Utility to generate an image element for the monster mascot
-   * @param {string} src - The URL/path to the image
-   */
+  /* -----------------------------
+     UI HELPERS
+  ----------------------------- */
+
   const makeImg = (src) => {
     const i = document.createElement("img");
     i.src = src;
@@ -73,10 +61,6 @@ function initMonsterHub() {
     return i;
   };
 
-  /**
-   * Utility to generate a label showing the level text
-   * @param {string} t - The text to display
-   */
   const makeLabel = (t) => {
     const d = document.createElement("div");
     d.style.fontWeight = "600";
@@ -84,30 +68,152 @@ function initMonsterHub() {
     return d;
   };
 
-  /**
-   * Renders the calculated level and current monster image to the DOM
-   */
- function render() {
-    container.innerHTML = "";
-    let file = localStorage.getItem("selectedMonster");
+  /* -----------------------------
+     CORE RENDER
+  ----------------------------- */
 
-    // SCALEABLE EVOLUTION LOGIC
-    if (overallLevel < 5) {
-        file = "shadowPlantEgg.png";
-    } else if (overallLevel < 15) {
-        // Levels 5-14: Show Slime if they haven't evolved yet
-        file = file || "plantSlime_1.png"; 
-    } else if (overallLevel < 30) {
-        // Levels 15-29: Show Stage 2 if they haven't picked one
-        file = file || "plantEvo_2A.png";
-    } else {
-        // Level 30+: Show a final form if they haven't picked one
-        file = file || "plantEvo3A.png";
+  function render() {
+    container.innerHTML = "";
+
+    let file = LS.get("selectedMonster");
+    let stage = parseInt(LS.get("monsterStage")) || 0;
+    let branch = LS.get("monsterBranch"); // "plant" | "shadow" | null
+
+    // Determine stage from level
+    let newStage = 0;
+
+    if (overallLevel >= 20) newStage = 3;
+    else if (overallLevel >= 10) newStage = 2;
+    else if (overallLevel >= 5) newStage = 1;
+
+    // Enforce step-by-step evolution
+    if (newStage > stage) {
+      showEvolutionChoices(stage + 1, branch);
+      return;
+    }
+
+    // Default fallback images
+    if (!file) {
+      if (stage === 0) file = "shadowPlantEgg.png";
+      if (stage === 1) file = "plantSlime_1.png";
+      if (stage === 2) file = "plantEvo_2A.png";
+      if (stage === 3) file = "plantEvo3A.png";
     }
 
     container.append(makeImg(`${IMG_BASE}${file}`));
-    container.append(makeLabel(`レベル：${Math.floor(overallLevel)}`));
-}
+    container.append(makeLabel(`レベル：${overallLevel}`));
+  }
+
+  /* -----------------------------
+     SAVE EVOLUTION
+  ----------------------------- */
+
+  function saveEvolution(file, stage) {
+    // Detect branch from filename
+    let branch = "plant";
+
+    if (file.startsWith("shadow")) {
+      branch = "shadow";
+    }
+
+    // Lock branch if first time
+    if (!LS.get("monsterBranch")) {
+      LS.set("monsterBranch", branch);
+    }
+
+    LS.set("selectedMonster", file);
+    LS.set("monsterStage", stage);
+
+    render();
+  }
+
+  /* -----------------------------
+     EVOLUTION MENU
+  ----------------------------- */
+
+  function showEvolutionChoices(stage, lockedBranch) {
+    container.innerHTML = "";
+
+    const title = document.createElement("div");
+    title.textContent = "進化を選んでください";
+    title.style.fontWeight = "600";
+    title.style.marginBottom = "12px";
+
+    container.append(title);
+
+    let options = [];
+
+    /* ---------- Stage 1 (Lv 5) ---------- */
+
+    if (stage === 1) {
+      options = [
+        "plantSlime_1.png",
+        "shadowSlime_1.png",
+      ];
+    }
+
+    /* ---------- Stage 2 (Lv 10) ---------- */
+
+    if (stage === 2) {
+      if (lockedBranch === "shadow") {
+        options = [
+          "shadowEvo_2A.png",
+          "shadowEvo_2B.png",
+        ];
+      } else {
+        options = [
+          "plantEvo_2A.png",
+          "plantEvo_2B.png",
+        ];
+      }
+    }
+
+    /* ---------- Stage 3 (Lv 20) ---------- */
+
+    if (stage === 3) {
+      if (lockedBranch === "shadow") {
+        options = [
+          "shadowEvo3A.png",
+          "shadowEvo3B.png",
+          "shadowEvo3C.png",
+          "shadowEvo3D.png",
+        ];
+      } else {
+        options = [
+          "plantEvo3A.png",
+          "plantEvo3B.png",
+          "plantEvo3C.png",
+          "plantEvo3D.png",
+        ];
+      }
+    }
+
+    /* ---------- Render Buttons ---------- */
+
+    options.forEach((file) => {
+      const btn = document.createElement("button");
+
+      btn.style.margin = "6px";
+      btn.style.border = "none";
+      btn.style.background = "none";
+      btn.style.cursor = "pointer";
+
+      const img = makeImg(`${IMG_BASE}${file}`);
+      img.style.maxWidth = "100px";
+
+      btn.append(img);
+
+      btn.onclick = () => {
+        saveEvolution(file, stage);
+      };
+
+      container.append(btn);
+    });
+  }
+
+  /* -----------------------------
+     INIT
+  ----------------------------- */
 
   render();
 }
