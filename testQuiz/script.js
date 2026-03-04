@@ -3,7 +3,7 @@
    ========================= */
 const QUIZ_ID = "verbTest"; 
 const DATA_FILE = "./questions.json"; 
-const MASTER_LIMIT = 3; // 1 level to Teach + 2 levels to Test
+const MASTER_LIMIT = 3; 
 
 let globalProfile = { level: 1, xp: 0, totalCorrect: 0 };
 let sessionStats = { created: Date.now(), words: {} };
@@ -84,15 +84,14 @@ function loadNext() {
   const key = currentQuestion.en + "|" + currentQuestion.jp;
   const currentMastery = sessionStats.words[key]?.correct || 0;
 
-  // TEACHING vs QUIZ Logic
   if (currentMastery === 0) {
     jpText.textContent = currentQuestion.jp;
-    enText.textContent = currentQuestion.en; // SHOW answer
+    enText.textContent = currentQuestion.en; 
     enText.style.opacity = "1";
-    feedback.innerHTML = `<span style="color: #6366f1;">First time! Type the word to learn it.</span>`;
+    feedback.innerHTML = `<span style="color: #6366f1;">First time! Type the word to learn it (+1 XP).</span>`;
   } else {
     jpText.textContent = currentQuestion.jp;
-    enText.textContent = "????"; // HIDE answer
+    enText.textContent = "????"; 
     enText.style.opacity = "0.3";
     feedback.textContent = "";
   }
@@ -108,7 +107,7 @@ function loadNext() {
 }
 
 /* =========================
-   ANSWER CHECKING (Updated for Unlearnt Loop)
+   ANSWER CHECKING
    ========================= */
 function checkAnswer() {
   const user = input.value.trim().toLowerCase();
@@ -126,11 +125,9 @@ function checkAnswer() {
     
     setTimeout(() => { loadNext(); }, 800); 
   } else {
-    // 1. Visually shake on error
     input.classList.add("shake-input");
     setTimeout(() => input.classList.remove("shake-input"), 400);
     
-    // 2. Character comparison logic for feedback
     let comparison = "";
     const maxLength = Math.max(user.length, correct.length);
     for (let i = 0; i < maxLength; i++) {
@@ -141,39 +138,54 @@ function checkAnswer() {
         else if (!uChar) comparison += `<span style="color: #94a3b8;">_</span>`;
     }
 
-    // 3. IMMEDIATELY REVEAL ANSWER (Switching to Teaching visuals)
     enText.textContent = currentQuestion.en; 
     enText.style.opacity = "1";
-    feedback.innerHTML = `✖️ <strong>Wrong!</strong><br>You: <code>${comparison}</code><br><span style="color: #6366f1;">Mistake detected! Type the word carefully to re-learn it.</span>`;
+    feedback.innerHTML = `✖️ <strong>Wrong!</strong><br>You: <code>${comparison}</code><br><span style="color: #ef4444;">Penalty: -1 Learning XP. Re-learn it now!</span>`;
 
-    // 4. Update Stats & Reset Mastery
     combo = 0;
     updateProgress(currentQuestion, false);
     
-    // 5. Force the user to "Try Again" with the answer visible
     tryAgainBtn.classList.remove("hidden");
     tryAgainBtn.focus();
   }
 }
 
 /* =========================
-   Data & Stats Management
+   DATA & XP MANAGEMENT (Updated)
    ========================= */
 function updateProgress(q, isCorrect) {
   const key = q.en + "|" + q.jp;
   if (!sessionStats.words[key]) sessionStats.words[key] = { en: q.en, jp: q.jp, correct: 0 };
   
+  const oldMastery = sessionStats.words[key].correct;
+
   if (isCorrect) {
     sessionStats.words[key].correct++;
-    globalProfile.xp++;
-    const needed = 10 + globalProfile.level * 3;
+    const newMastery = sessionStats.words[key].correct;
+
+    // +1 XP for learning (Transition 0 -> 1)
+    if (oldMastery === 0) {
+        globalProfile.xp += 1;
+    }
+
+    // +2 XP for mastering (Transition to MASTER_LIMIT)
+    if (newMastery === MASTER_LIMIT) {
+        globalProfile.xp += 2;
+    }
+
+    // Level up logic
+    let needed = 10 + globalProfile.level * 3;
     if (globalProfile.xp >= needed) {
-      globalProfile.xp = 0;
+      globalProfile.xp -= needed; // Overflow XP to next level
       globalProfile.level++;
       localStorage.setItem(QUIZ_ID + "_level", globalProfile.level);
     }
   } else {
-    // CRITICAL: Reset word to 0 (Unlearnt) on any mistake
+    // If they already "Learned" it (Level 1 or 2), they lose that 1 XP
+    if (oldMastery >= 1) {
+        globalProfile.xp = Math.max(0, globalProfile.xp - 1);
+    }
+    // Reset to unlearnt status
     sessionStats.words[key].correct = 0;
   }
   
@@ -242,5 +254,4 @@ input.addEventListener("keydown", e => {
   }
 });
 
-// Run
 init();
