@@ -20,8 +20,8 @@
    Base Layout
    ========================= */
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  max-width: 960px;
+  font-family: comicsansMS;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 2rem;
   background: var(--bg);
@@ -52,7 +52,7 @@ header h1 {
    ========================= */
 .quiz-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 1.6rem;
 }
 
