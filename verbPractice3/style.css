@@ -1,24 +1,12 @@
 /* =========================
-   Visibility Helpers
+   Visibility & Layout
    ========================= */
-.hidden {
-  display: none !important;
-}
+.hidden { display: none !important; }
+.active { display: flex; }
 
-.active {
-  display: flex;
-}
-
-/* =========================
-   Reset & Base
-   ========================= */
-html, body {
-  height: 100%;
-  margin: 0;
-}
-
+html, body { height: 100%; margin: 0; }
 body {
-  font-family: "Comic Sans MS", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Comic Sans MS", system-ui, sans-serif;
   background: radial-gradient(circle at top, #eef2ff, #e0e7ff);
   color: #1e293b;
   display: flex;
@@ -27,25 +15,6 @@ body {
   justify-content: center;
 }
 
-/* =========================
-   English / Japanese Text
-   ========================= */
-#enText {
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: #1e3a8a;
-  margin-top: 0.2rem;
-}
-
-#jpText {
-  font-size: 1rem;
-  color: #475569;
-  font-weight: 350;
-}
-
-/* =========================
-   Page Title
-   ========================= */
 .page-title {
   margin-bottom: 1rem;
   font-size: 1.8rem;
@@ -53,7 +22,77 @@ body {
 }
 
 /* =========================
-   Screens / Cards
+   The Dual Sidebars
+   ========================= */
+#quizScreen { position: relative; }
+
+.side-panel {
+  position: absolute;
+  top: 0;
+  width: 135px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(5px);
+  border-radius: 15px;
+  padding: 0.8rem 0.5rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  font-size: 0.75rem;
+  overflow-y: auto;
+}
+
+.side-panel.left { left: -155px; }
+.side-panel.right { right: -155px; }
+
+.side-panel h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.85rem;
+  color: #4f46e5;
+  text-align: center;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 4px;
+}
+
+/* Progress Heatmap Colors */
+.session-row {
+  margin-bottom: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.score-0 {
+  background: #fee2e2 !important;
+  border-left: 4px solid #ef4444;
+  color: #991b1b;
+}
+
+.score-1 {
+  background: #ffedd5 !important;
+  border-left: 4px solid #f97316;
+  color: #9a3412;
+}
+
+.score-2 {
+  background: #fef9c3 !important;
+  border-left: 4px solid #eab308;
+  color: #854d0e;
+}
+
+.score-mastered {
+  background: #d1fae5 !important;
+  border-left: 4px solid #10b981;
+  color: #065f46;
+  font-weight: bold;
+}
+
+@media (max-width: 750px) {
+  .side-panel { display: none !important; }
+}
+
+/* =========================
+   Quiz Card
    ========================= */
 .screen {
   width: 100%;
@@ -68,59 +107,27 @@ body {
   text-align: center;
 }
 
-/* =========================
-   Buttons
-   ========================= */
-button {
-  border: none;
-  border-radius: 999px;
-  padding: 12px 26px;
+#enText {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #1e3a8a;
+}
+
+#jpText {
   font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  color: #475569;
+  margin-bottom: 0.5rem;
 }
 
-#startBtn,
-#nextBtn {
-  background: linear-gradient(90deg, #4f46e5, #6366f1);
-  color: white;
-  box-shadow: 0 6px 14px rgba(79, 70, 229, 0.35);
-}
-
-#nextBtn:disabled {
-  opacity: 0.5;
-  box-shadow: none;
-  cursor: default;
-}
-
-#tryAgainBtn {
-  margin-top: 0.6rem;
-  background: linear-gradient(90deg, #ef4444, #f97316);
-  color: white;
-  box-shadow: 0 6px 14px rgba(239, 68, 68, 0.35);
-}
-
-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-}
-
-/* =========================
-   Stats Panel
-   ========================= */
 #statsPanel {
   width: 100%;
   margin-bottom: 1rem;
   font-size: 0.9rem;
-  color: #475569;
 }
 
-/* =========================
-   XP Bar
-   ========================= */
 #xpBarContainer {
   width: 100%;
-  height: 25px;
+  height: 20px;
   background: #e5e7eb;
   border-radius: 999px;
   overflow: hidden;
@@ -129,78 +136,114 @@ button:hover:not(:disabled) {
 
 #xpBar {
   height: 100%;
-  width: 10%;
+  width: 0%;
   background: linear-gradient(40deg, #FCEE21, #009245);
-  position: relative;
-  overflow: hidden;
-  box-shadow: inset 0 0 6px rgba(255,255,255,0.4);
-}
-
-/* Animated stripe overlay */
-#xpBar::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: repeating-linear-gradient(
-    -45deg,
-    rgba(255, 255, 255, 0.25) 0px,
-    rgba(255, 255, 255, 0.25) 10px,
-    transparent 10px,
-    transparent 20px
-  );
-  background-size: 40px 40px;
-  animation: move 3s linear infinite;
-}
-
-/* XP animation */
-@keyframes move {
-  from {
-    background-position: 0 0;
-  }
-  to {
-    background-position: 40px 40px;
-  }
+  transition: width 0.3s ease;
 }
 
 /* =========================
-   Inputs
+   Inputs & Feedback
    ========================= */
 input {
   width: 100%;
-  padding: 10px;
-  font-size: 1.5rem;
+  padding: 12px;
+  font-size: 1.4rem;
   border-radius: 10px;
-  border: 1px solid #c7d2fe;
-  margin: 0.6rem 0;
+  border: 2px solid #c7d2fe;
+  margin: 1rem 0;
   text-align: center;
-}
-
-input::placeholder {
-  color: #94a3b8;
-  font-size: 1.2rem;
-}
-
-input:focus {
   outline: none;
-  border-color: #6366f1;
-  text-align: left;
 }
 
-/* =========================
-   Confetti
-   ========================= */
-#confettiCanvas {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1000;
+/* Success State */
+.success-input {
+  animation: vertical-shake 0.4s ease-in-out;
+  border-color: #10b981 !important;
+  background-color: #f0fdf4;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
 }
 
+/* Failure State */
+.shake-input {
+  animation: horizontal-shake 0.4s ease-in-out;
+  border-color: #ef4444 !important;
+  background-color: #fef2f2;
+}
+
+/* Animations */
+
+@keyframes vertical-shake {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-10px); }
+  75% { transform: translateY(10px); }
+}
+
+@keyframes horizontal-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+#feedback {
+  font-weight: bold;
+  min-height: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.correct-style { color: #10b981; }
+.wrong-style { color: #ef4444; }
+
 /* =========================
-   Footer
+   Buttons
    ========================= */
+.button-container {
+  width: 100%;
+  min-height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+button {
+  border: none;
+  border-radius: 999px;
+  padding: 12px 30px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+#startBtn,
+#nextBtn {
+  background: #4f46e5;
+  color: white;
+}
+
+#tryAgainBtn {
+  background: #ef4444;
+  color: white;
+}
+
 footer {
-  margin-top: 1rem;
-  font-size: 0.85rem;
+  margin-top: 2rem;
+  font-size: 0.8rem;
   color: #94a3b8;
+}
+
+/* =========================
+   Focus State (Keyboard)
+   ========================= */
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.4);
+  transform: scale(1.05);
+}
+
+#tryAgainBtn:focus {
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.4);
 }
