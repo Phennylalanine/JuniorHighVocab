@@ -1,25 +1,18 @@
 /* =========================
    Configuration & State
    ========================= */
-const QUIZ_ID = "verbs_part2";
-const DATA_FILE = "./questions.json";
-const MASTER_LIMIT = 3;
-
-/* =========================
-   XP Curve
-   ========================= */
-function xpNeeded(level) {
-  return Math.floor(25 + level * 6 + Math.pow(level, 1.3));
-}
+const QUIZ_ID = "verbPractice2"; 
+const DATA_FILE = "./questions.json"; 
+const MASTER_LIMIT = 3; 
 
 let globalProfile = { level: 1, xp: 0, totalCorrect: 0 };
 let sessionStats = { created: Date.now(), words: {} };
 let questions = [];
 let currentQuestion = null;
+let score = 0;
+let combo = 0;
 
-/* =========================
-   DOM ELEMENTS
-   ========================= */
+/* DOM ELEMENTS */
 const startBtn = document.getElementById("startBtn");
 const nextBtn = document.getElementById("nextBtn");
 const tryAgainBtn = document.getElementById("tryAgainBtn");
@@ -35,16 +28,11 @@ const xpText = document.getElementById("xpText");
 const inProgressList = document.getElementById("inProgressList");
 const masteredList = document.getElementById("masteredList");
 
-/* =========================
-   Speech
-   ========================= */
 function speak(text) {
   window.speechSynthesis.cancel();
-
   const msg = new SpeechSynthesisUtterance(text);
-  msg.lang = "en-US";
+  msg.lang = 'en-US';
   msg.rate = 0.9;
-
   window.speechSynthesis.speak(msg);
 }
 
@@ -52,17 +40,13 @@ function speak(text) {
    Initialization
    ========================= */
 async function init() {
-  const savedProfile = localStorage.getItem("quiz_global_profile");
-  if (savedProfile) {
-    globalProfile = JSON.parse(savedProfile);
-  }
-
+  const savedProfile = localStorage.getItem(QUIZ_ID + "_profile");
+  if (savedProfile) globalProfile = JSON.parse(savedProfile);
+  
   const savedSession = localStorage.getItem("quiz_session_" + QUIZ_ID);
   if (savedSession) {
     const data = JSON.parse(savedSession);
-    if ((Date.now() - data.created) < 172800000) {
-      sessionStats = data;
-    }
+    if ((Date.now() - data.created) < 172800000) sessionStats = data;
   }
 
   try {
@@ -75,10 +59,14 @@ async function init() {
 
   updateStats();
   updatePanel();
+  
+  if (!localStorage.getItem(QUIZ_ID + "_level")) {
+      localStorage.setItem(QUIZ_ID + "_level", globalProfile.level);
+  }
 }
 
 /* =========================
-   Question Handling
+   Game Loop
    ========================= */
 function loadNext() {
   const pool = questions.filter(q => {
@@ -87,171 +75,154 @@ function loadNext() {
   });
 
   if (pool.length === 0) {
-    alert("Incredible! You have mastered all the verbs!");
+    alert("Incredible! You have mastered this level!");
     location.reload();
     return;
   }
 
   currentQuestion = pool[Math.floor(Math.random() * pool.length)];
+  const key = currentQuestion.en + "|" + currentQuestion.jp;
+  const currentMastery = sessionStats.words[key]?.correct || 0;
 
-  jpText.textContent = currentQuestion.jp;
-  enText.textContent = currentQuestion.en;
-
+  if (currentMastery === 0) {
+    jpText.textContent = currentQuestion.jp;
+    enText.textContent = currentQuestion.en; 
+    enText.style.opacity = "1";
+    feedback.innerHTML = `<span style="color: #6366f1;">First time! Type the word to learn it (+1 XP).</span>`;
+  } else {
+    jpText.textContent = currentQuestion.jp;
+    enText.textContent = "????"; 
+    enText.style.opacity = "0.3";
+    feedback.textContent = "";
+  }
+  
   speak(currentQuestion.en);
 
-  // Reset UI
   input.value = "";
   input.disabled = false;
   input.classList.remove("success-input", "shake-input");
   input.focus();
-
-  feedback.textContent = "";
-
   nextBtn.classList.add("hidden");
   tryAgainBtn.classList.add("hidden");
 }
 
 /* =========================
-   Answer Check
+   ANSWER CHECKING
    ========================= */
 function checkAnswer() {
   const user = input.value.trim().toLowerCase();
   const correct = currentQuestion.en.toLowerCase();
-
   if (!user || input.disabled) return;
 
   if (user === correct) {
-
-    feedback.textContent = "✓ Correct!";
+    feedback.innerHTML = "✔️ <strong>Correct!</strong>";
     feedback.className = "correct-style";
-
     input.classList.add("success-input");
     input.disabled = true;
 
-  
-    updateMastery(currentQuestion, true);
-
-    setTimeout(loadNext, 800);
-
+    score++; combo++;
+    updateProgress(currentQuestion, true);
+    
+    setTimeout(() => { loadNext(); }, 800); 
   } else {
+    input.classList.add("shake-input");
+    setTimeout(() => input.classList.remove("shake-input"), 400);
+    
+    let comparison = "";
+    const maxLength = Math.max(user.length, correct.length);
+    for (let i = 0; i < maxLength; i++) {
+        const uChar = user[i] || "";
+        const cChar = correct[i] || "";
+        if (uChar === cChar) comparison += `<span style="color: #10b981;">${cChar}</span>`;
+        else if (uChar && cChar) comparison += `<span style="color: #ef4444;">${uChar}</span>`;
+        else if (!uChar) comparison += `<span style="color: #94a3b8;">_</span>`;
+    }
 
-    // Restart shake animation
-    input.classList.remove("shake-input");
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        input.classList.add("shake-input");
-      });
-    });
-
-    feedback.textContent = `✗ Answer: ${currentQuestion.en}`;
-    feedback.className = "wrong-style";
+    enText.textContent = currentQuestion.en; 
+    enText.style.opacity = "1";
+    feedback.innerHTML = `✖️ <strong>Wrong!</strong><br>You: <code>${comparison}</code><br><span style="color: #ef4444;">Penalty: -1 Learning XP. Re-learn it now!</span>`;
 
     combo = 0;
-
-    updateMastery(currentQuestion, false);
-
+    updateProgress(currentQuestion, false);
+    
     tryAgainBtn.classList.remove("hidden");
     tryAgainBtn.focus();
   }
-
-  updateStats();
 }
 
 /* =========================
-   Data Management
+   DATA & XP MANAGEMENT (Updated)
    ========================= */
-function updateMastery(q, isCorrect) {
+function updateProgress(q, isCorrect) {
   const key = q.en + "|" + q.jp;
-
-  if (!sessionStats.words[key]) {
-    sessionStats.words[key] = {
-      en: q.en,
-      jp: q.jp,
-      correct: 0
-    };
-  }
+  if (!sessionStats.words[key]) sessionStats.words[key] = { en: q.en, jp: q.jp, correct: 0 };
+  
+  const oldMastery = sessionStats.words[key].correct;
 
   if (isCorrect) {
-
     sessionStats.words[key].correct++;
-    globalProfile.xp++;
+    const newMastery = sessionStats.words[key].correct;
 
-    const needed = xpNeeded(globalProfile.level);
-
-    // Handle multiple level-ups safely
-    while (globalProfile.xp >= needed) {
-      globalProfile.xp -= needed;
-      globalProfile.level++;
+    // +1 XP for learning (Transition 0 -> 1)
+    if (oldMastery === 0) {
+        globalProfile.xp += 1;
     }
 
+    // +2 XP for mastering (Transition to MASTER_LIMIT)
+    if (newMastery === MASTER_LIMIT) {
+        globalProfile.xp += 2;
+    }
+
+    // Level up logic
+    let needed = 10 + globalProfile.level * 3;
+    if (globalProfile.xp >= needed) {
+      globalProfile.xp -= needed; // Overflow XP to next level
+      globalProfile.level++;
+      localStorage.setItem(QUIZ_ID + "_level", globalProfile.level);
+    }
   } else {
-
-    sessionStats.words[key].correct = Math.max(
-      0,
-      sessionStats.words[key].correct - 1
-    );
+    // If they already "Learned" it (Level 1 or 2), they lose that 1 XP
+    if (oldMastery >= 1) {
+        globalProfile.xp = Math.max(0, globalProfile.xp - 1);
+    }
+    // Reset to unlearnt status
+    sessionStats.words[key].correct = 0;
   }
-
-  localStorage.setItem(
-    "quiz_global_profile",
-    JSON.stringify(globalProfile)
-  );
-
-  localStorage.setItem(
-    "quiz_session_" + QUIZ_ID,
-    JSON.stringify(sessionStats)
-  );
-
+  
+  localStorage.setItem(QUIZ_ID + "_profile", JSON.stringify(globalProfile));
+  localStorage.setItem("quiz_session_" + QUIZ_ID, JSON.stringify(sessionStats));
+  updateStats();
   updatePanel();
 }
 
-/* =========================
-   UI Updates
-   ========================= */
 function updateStats() {
-
-
+  if (pointsEl) pointsEl.textContent = score;
+  if (comboEl) comboEl.textContent = combo;
   if (levelEl) levelEl.textContent = globalProfile.level;
-
-  const needed = xpNeeded(globalProfile.level);
-
-  if (xpText) {
-    xpText.textContent = `${globalProfile.xp} / ${needed}`;
-  }
-
-  if (xpBar) {
-    xpBar.style.width =
-      (globalProfile.xp / needed) * 100 + "%";
-  }
+  const needed = 10 + globalProfile.level * 3;
+  if (xpText) xpText.textContent = `${globalProfile.xp} / ${needed}`;
+  if (xpBar) xpBar.style.width = (globalProfile.xp / needed) * 100 + "%";
 }
 
 function updatePanel() {
   if (!inProgressList || !masteredList) return;
-
   inProgressList.innerHTML = "";
   masteredList.innerHTML = "";
 
   Object.values(sessionStats.words)
-    .sort((a, b) => b.correct - a.correct)
+    .sort((a,b) => b.correct - a.correct)
     .forEach(w => {
-
       const row = document.createElement("div");
-
       row.className = "session-row";
       row.textContent = `${w.en}: ${w.correct}/${MASTER_LIMIT}`;
-
+      
       if (w.correct >= MASTER_LIMIT) {
-
         row.classList.add("score-mastered");
         masteredList.appendChild(row);
-
       } else {
-
         if (w.correct === 0) row.classList.add("score-0");
         else if (w.correct === 1) row.classList.add("score-1");
         else if (w.correct === 2) row.classList.add("score-2");
-
         inProgressList.appendChild(row);
       }
     });
@@ -261,29 +232,19 @@ function updatePanel() {
    Event Listeners
    ========================= */
 startBtn.addEventListener("click", () => {
-
-  document
-    .getElementById("startScreen")
-    .classList.add("hidden");
-
-  const quiz = document.getElementById("quizScreen");
-
-  quiz.classList.remove("hidden");
-  quiz.classList.add("active");
-
+  document.getElementById("startScreen").classList.add("hidden");
+  document.getElementById("quizScreen").classList.remove("hidden");
+  document.getElementById("quizScreen").classList.add("active");
   loadNext();
 });
 
 nextBtn.addEventListener("click", loadNext);
 
 tryAgainBtn.addEventListener("click", () => {
-
   input.value = "";
   input.classList.remove("shake-input");
   input.focus();
-
   feedback.textContent = "";
-
   tryAgainBtn.classList.add("hidden");
 });
 
@@ -293,7 +254,4 @@ input.addEventListener("keydown", e => {
   }
 });
 
-/* =========================
-   Start App
-   ========================= */
 init();
