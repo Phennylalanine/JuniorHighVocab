@@ -1,55 +1,18 @@
-/* =====================
-   QUIZ ID & CONFIG
-===================== */
-const QUIZ_ID = "verbs_part2";
+/* =========================
+   Configuration & State
+   ========================= */
+const QUIZ_ID = "verbPractice"; 
 const DATA_FILE = "./questions.json"; 
-const LOCAL_LEVEL_KEY = "verbPractice_level";
-const RESET_DAYS = 2;   // How often to reset progress
-const MASTER_LIMIT = 3; // How many correct answers to "master" a word
+const MASTER_LIMIT = 3; 
 
-/* =====================
-   GLOBAL PROFILE (XP & Levels)
-===================== */
-const GLOBAL_PROFILE_KEY = "quiz_global_profile";
 let globalProfile = { level: 1, xp: 0, totalCorrect: 0 };
-
-// Load user's global level/XP from storage
-function loadGlobalProfile() {
-  const saved = localStorage.getItem(GLOBAL_PROFILE_KEY);
-  if (saved) globalProfile = JSON.parse(saved);
-}
-
-// Save user's global progress
-function saveGlobalProfile() {
-  localStorage.setItem(GLOBAL_PROFILE_KEY, JSON.stringify(globalProfile));
-}
-
-/* =====================
-   SESSION STORAGE (Daily Progress)
-===================== */
-const SESSION_KEY = "quiz_session_" + QUIZ_ID;
 let sessionStats = { created: Date.now(), words: {} };
+let questions = [];
+let currentQuestion = null;
+let score = 0;
+let combo = 0;
 
-// Load current quiz session (resets if too old)
-function loadSession() {
-  const saved = localStorage.getItem(SESSION_KEY);
-  if (!saved) return;
-  const data = JSON.parse(saved);
-  const age = Date.now() - data.created;
-  if (age > RESET_DAYS * 86400000) {
-    localStorage.removeItem(SESSION_KEY);
-    return;
-  }
-  sessionStats = data;
-}
-
-function saveSession() {
-  localStorage.setItem(SESSION_KEY, JSON.stringify(sessionStats));
-}
-
-/* =====================
-   DOM ELEMENTS
-===================== */
+/* DOM ELEMENTS */
 const startBtn = document.getElementById("startBtn");
 const nextBtn = document.getElementById("nextBtn");
 const tryAgainBtn = document.getElementById("tryAgainBtn");
@@ -62,223 +25,233 @@ const comboEl = document.getElementById("combo");
 const levelEl = document.getElementById("level");
 const xpBar = document.getElementById("xpBar");
 const xpText = document.getElementById("xpText");
-const sessionList = document.getElementById("sessionList");
+const inProgressList = document.getElementById("inProgressList");
+const masteredList = document.getElementById("masteredList");
 
-/* =====================
-   GAME STATE & LOADING
-===================== */
-let questions = [];
-let currentQuestion = null;
-let score = 0;
-let combo = 0;
+function speak(text) {
+  window.speechSynthesis.cancel();
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang = 'en-US';
+  msg.rate = 0.9;
+  window.speechSynthesis.speak(msg);
+}
 
-// Fetch questions from JSON file
-async function loadQuestions() {
+/* =========================
+   Initialization
+   ========================= */
+async function init() {
+  const savedProfile = localStorage.getItem(QUIZ_ID + "_profile");
+  if (savedProfile) globalProfile = JSON.parse(savedProfile);
+  
+  const savedSession = localStorage.getItem("quiz_session_" + QUIZ_ID);
+  if (savedSession) {
+    const data = JSON.parse(savedSession);
+    if ((Date.now() - data.created) < 172800000) sessionStats = data;
+  }
+
   try {
     const res = await fetch(DATA_FILE);
-    if (!res.ok) throw new Error("Failed to load questions.json");
     const data = await res.json();
     questions = data.questions;
-    startBtn.disabled = false; // Enable button once data is ready
-  } catch (err) {
-    console.error("Load error:", err);
-    startBtn.disabled = false; // Fallback to let user try anyway
+  } catch (e) {
+    console.error("Data load error", e);
+  }
+
+  updateStats();
+  updatePanel();
+  
+  if (!localStorage.getItem(QUIZ_ID + "_level")) {
+      localStorage.setItem(QUIZ_ID + "_level", globalProfile.level);
   }
 }
 
-/* =====================
-   WORD TRACKING
-===================== */
+/* =========================
+   Game Loop
+   ========================= */
+function loadNext() {
+  const pool = questions.filter(q => {
+    const k = q.en + "|" + q.jp;
+    return (sessionStats.words[k]?.correct || 0) < MASTER_LIMIT;
+  });
 
-/**
- * Updates individual word mastery and triggers global XP gain
- */
-function updateWord(q, isCorrect) {
-  const key = q.en + "|" + q.jp;
-
-  if (!sessionStats.words[key]) {
-    sessionStats.words[key] = {
-      en: q.en,
-      jp: q.jp,
-      correct: 0
-    };
+  if (pool.length === 0) {
+    alert("Incredible! You have mastered this level!");
+    location.reload();
+    return;
   }
+
+  currentQuestion = pool[Math.floor(Math.random() * pool.length)];
+  const key = currentQuestion.en + "|" + currentQuestion.jp;
+  const currentMastery = sessionStats.words[key]?.correct || 0;
+
+  if (currentMastery === 0) {
+    jpText.textContent = currentQuestion.jp;
+    enText.textContent = currentQuestion.en; 
+    enText.style.opacity = "1";
+    feedback.innerHTML = `<span style="color: #6366f1;">First time! Type the word to learn it (+1 XP).</span>`;
+  } else {
+    jpText.textContent = currentQuestion.jp;
+    enText.textContent = "????"; 
+    enText.style.opacity = "0.3";
+    feedback.textContent = "";
+  }
+  
+  speak(currentQuestion.en);
+
+  input.value = "";
+  input.disabled = false;
+  input.classList.remove("success-input", "shake-input");
+  input.focus();
+  nextBtn.classList.add("hidden");
+  tryAgainBtn.classList.add("hidden");
+}
+
+/* =========================
+   ANSWER CHECKING
+   ========================= */
+function checkAnswer() {
+  const user = input.value.trim().toLowerCase();
+  const correct = currentQuestion.en.toLowerCase();
+  if (!user || input.disabled) return;
+
+  if (user === correct) {
+    feedback.innerHTML = "✔️ <strong>Correct!</strong>";
+    feedback.className = "correct-style";
+    input.classList.add("success-input");
+    input.disabled = true;
+
+    score++; combo++;
+    updateProgress(currentQuestion, true);
+    
+    setTimeout(() => { loadNext(); }, 800); 
+  } else {
+    input.classList.add("shake-input");
+    setTimeout(() => input.classList.remove("shake-input"), 400);
+    
+    let comparison = "";
+    const maxLength = Math.max(user.length, correct.length);
+    for (let i = 0; i < maxLength; i++) {
+        const uChar = user[i] || "";
+        const cChar = correct[i] || "";
+        if (uChar === cChar) comparison += `<span style="color: #10b981;">${cChar}</span>`;
+        else if (uChar && cChar) comparison += `<span style="color: #ef4444;">${uChar}</span>`;
+        else if (!uChar) comparison += `<span style="color: #94a3b8;">_</span>`;
+    }
+
+    enText.textContent = currentQuestion.en; 
+    enText.style.opacity = "1";
+    feedback.innerHTML = `✖️ <strong>Wrong!</strong><br>You: <code>${comparison}</code><br><span style="color: #ef4444;">Penalty: -1 Learning XP. Re-learn it now!</span>`;
+
+    combo = 0;
+    updateProgress(currentQuestion, false);
+    
+    tryAgainBtn.classList.remove("hidden");
+    tryAgainBtn.focus();
+  }
+}
+
+/* =========================
+   DATA & XP MANAGEMENT (Updated)
+   ========================= */
+function updateProgress(q, isCorrect) {
+  const key = q.en + "|" + q.jp;
+  if (!sessionStats.words[key]) sessionStats.words[key] = { en: q.en, jp: q.jp, correct: 0 };
+  
+  const oldMastery = sessionStats.words[key].correct;
 
   if (isCorrect) {
     sessionStats.words[key].correct++;
-    updateGlobalProgress();
-  } else {
-    // Decrease mastery slightly on wrong answer without going below 0
-    sessionStats.words[key].correct = Math.max(0, sessionStats.words[key].correct - 1);
-  }
+    const newMastery = sessionStats.words[key].correct;
 
-  saveSession();
+    // +1 XP for learning (Transition 0 -> 1)
+    if (oldMastery === 0) {
+        globalProfile.xp += 1;
+    }
+
+    // +2 XP for mastering (Transition to MASTER_LIMIT)
+    if (newMastery === MASTER_LIMIT) {
+        globalProfile.xp += 2;
+    }
+
+    // Level up logic
+    let needed = 10 + globalProfile.level * 3;
+    if (globalProfile.xp >= needed) {
+      globalProfile.xp -= needed; // Overflow XP to next level
+      globalProfile.level++;
+      localStorage.setItem(QUIZ_ID + "_level", globalProfile.level);
+    }
+  } else {
+    // If they already "Learned" it (Level 1 or 2), they lose that 1 XP
+    if (oldMastery >= 1) {
+        globalProfile.xp = Math.max(0, globalProfile.xp - 1);
+    }
+    // Reset to unlearnt status
+    sessionStats.words[key].correct = 0;
+  }
+  
+  localStorage.setItem(QUIZ_ID + "_profile", JSON.stringify(globalProfile));
+  localStorage.setItem("quiz_session_" + QUIZ_ID, JSON.stringify(sessionStats));
+  updateStats();
   updatePanel();
 }
 
-function updateGlobalProgress() {
-  globalProfile.xp++;
-  globalProfile.totalCorrect++;
-
-  const needed = 10 + globalProfile.level * 3;
-
-  if (globalProfile.xp >= needed) {
-    globalProfile.xp = 0;
-    globalProfile.level++;
-  }
-
-  saveGlobalProfile();
-
-  // Sync level to the card on index.html
-  localStorage.setItem(LOCAL_LEVEL_KEY, globalProfile.level);
-}
-
-/* =====================
-   QUESTION POOL
-===================== */
-
-/**
- * Filters questions that haven't reached the MASTER_LIMIT yet
- */
-function getAvailableQuestions() {
-  return questions.filter(q => {
-    const key = q.en + "|" + q.jp;
-    const data = sessionStats.words[key];
-    if (!data) return true;
-    return data.correct < MASTER_LIMIT;
-  });
-}
-
-/**
- * Picks a random question or ends the quiz if all are mastered
- */
-function getRandomQuestion() {
-  const pool = getAvailableQuestions();
-  if (pool.length === 0) {
-    finishQuiz();
-    return null;
-  }
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
-/* =====================
-   UI UPDATES
-===================== */
-
-/**
- * Updates the score, combo, and XP bar
- */
 function updateStats() {
   if (pointsEl) pointsEl.textContent = score;
   if (comboEl) comboEl.textContent = combo;
   if (levelEl) levelEl.textContent = globalProfile.level;
-
   const needed = 10 + globalProfile.level * 3;
   if (xpText) xpText.textContent = `${globalProfile.xp} / ${needed}`;
   if (xpBar) xpBar.style.width = (globalProfile.xp / needed) * 100 + "%";
 }
 
-/**
- * Updates the 'Recent Activity' or 'Word Mastery' panel
- */
 function updatePanel() {
-  if (!sessionList) return;
-  sessionList.innerHTML = "";
+  if (!inProgressList || !masteredList) return;
+  inProgressList.innerHTML = "";
+  masteredList.innerHTML = "";
 
-  const list = Object.values(sessionStats.words);
-  list.sort((a, b) => b.correct - a.correct);
-
-  for (const w of list) {
-    const row = document.createElement("div");
-    row.className = "session-row";
-    row.textContent = `${w.jp} / ${w.en} : ${w.correct}`;
-    sessionList.appendChild(row);
-  }
+  Object.values(sessionStats.words)
+    .sort((a,b) => b.correct - a.correct)
+    .forEach(w => {
+      const row = document.createElement("div");
+      row.className = "session-row";
+      row.textContent = `${w.en}: ${w.correct}/${MASTER_LIMIT}`;
+      
+      if (w.correct >= MASTER_LIMIT) {
+        row.classList.add("score-mastered");
+        masteredList.appendChild(row);
+      } else {
+        if (w.correct === 0) row.classList.add("score-0");
+        else if (w.correct === 1) row.classList.add("score-1");
+        else if (w.correct === 2) row.classList.add("score-2");
+        inProgressList.appendChild(row);
+      }
+    });
 }
 
-/* =====================
-   QUIZ FLOW
-===================== */
-
-function startQuiz() {
-  const startScreen = document.getElementById("startScreen");
-  const quizScreen = document.getElementById("quizScreen");
-
-  if (startScreen && quizScreen) {
-    startScreen.classList.add("hidden");
-    startScreen.classList.remove("active");
-    quizScreen.classList.remove("hidden");
-    quizScreen.classList.add("active");
-  }
-
+/* =========================
+   Event Listeners
+   ========================= */
+startBtn.addEventListener("click", () => {
+  document.getElementById("startScreen").classList.add("hidden");
+  document.getElementById("quizScreen").classList.remove("hidden");
+  document.getElementById("quizScreen").classList.add("active");
   loadNext();
-}
-
-function loadNext() {
-  currentQuestion = getRandomQuestion();
-  if (!currentQuestion) return;
-
-  jpText.textContent = currentQuestion.jp;
-  enText.textContent = currentQuestion.en;
-  input.value = "";
-  input.disabled = false;
-  feedback.textContent = " ";
-  nextBtn.disabled = true;
-  tryAgainBtn.style.display = "none";
-  input.focus();
-}
-
-function checkAnswer() {
-  const user = input.value.trim().toLowerCase();
-  const correct = currentQuestion.en.toLowerCase();
-  if (!user) return;
-
-  if (user === correct) {
-    feedback.textContent = "✓ Correct";
-    score++;
-    combo++;
-    updateWord(currentQuestion, true);
-    input.disabled = true;
-    nextBtn.disabled = false;
-  } else {
-    feedback.textContent = `✗ Correct: ${currentQuestion.en}`;
-    combo = 0;
-    updateWord(currentQuestion, false);
-    tryAgainBtn.style.display = "inline-block";
-  }
-  updateStats();
-}
-
-function finishQuiz() {
-  alert("All words completed for today!");
-  localStorage.setItem("quiz_cooldown_" + QUIZ_ID, Date.now());
-  location.reload();
-}
-
-/* =====================
-   INITIALIZATION & EVENTS
-===================== */
-function init() {
-  startBtn.disabled = true; 
-  loadGlobalProfile();
-  loadSession();
-  loadQuestions();
-  updatePanel();
-  updateStats();
-  
-  // Update local level storage on load
-  localStorage.setItem(LOCAL_LEVEL_KEY, globalProfile.level);
-}
-
-startBtn.addEventListener("click", startQuiz);
-nextBtn.addEventListener("click", loadNext);
-input.addEventListener("keydown", e => { if (e.key === "Enter") checkAnswer(); });
-tryAgainBtn.addEventListener("click", () => {
-  input.value = "";
-  input.focus();
-  feedback.textContent = " ";
-  tryAgainBtn.style.display = "none";
 });
 
+nextBtn.addEventListener("click", loadNext);
+
+tryAgainBtn.addEventListener("click", () => {
+  input.value = "";
+  input.classList.remove("shake-input");
+  input.focus();
+  feedback.textContent = "";
+  tryAgainBtn.classList.add("hidden");
+});
+
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    checkAnswer();
+  }
+});
 
 init();
