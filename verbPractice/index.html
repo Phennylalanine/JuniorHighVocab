@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Verb Practice</title>
+  <title>Verb Practice Part 1</title>
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<h1 class="page-title">動詞練習</h1>
+<h1 class="page-title">動詞練習 Part 1</h1>
 
 <!-- Start Screen -->
 <div id="startScreen" class="screen active">
@@ -19,27 +18,28 @@
 <!-- Quiz Screen -->
 <div id="quizScreen" class="screen hidden">
   
-  <div id="sessionPanel">
-  <h3>Session</h3>
-  <div id="sessionList"></div>
-</div>
+  <!-- LEFT SIDE: Words in progress -->
+  <div id="sessionPanel" class="side-panel left">
+    <h3>To Learn</h3>
+    <div id="inProgressList"></div>
+  </div>
+
+  <!-- RIGHT SIDE: Mastered words -->
+  <div id="masteredPanel" class="side-panel right">
+    <h3>Mastered</h3>
+    <div id="masteredList"></div>
+  </div>
+  
   <!-- Stats Panel -->
   <div id="statsPanel">
     <div class="level-section">
       <div>
         <strong>Level:</strong> <span id="level">1</span>
       </div>
-
       <div id="xpBarContainer">
         <div id="xpBar"></div>
       </div>
-
       <small id="xpText">0 / 10 XP</small>
-    </div>
-
-    <div>
-      <strong>Score:</strong> <span id="points">0</span> |
-      <strong>Combo:</strong> <span id="combo">0</span>
     </div>
   </div>
 
@@ -50,21 +50,22 @@
     type="text"
     id="answerInput"
     autocomplete="off"
-    placeholder="Type the correct English"
+    placeholder="Type the English"
   />
 
   <div id="feedback"></div>
 
-  <div id="choicesText"></div>
-
-  <button id="nextBtn" disabled>Next</button>
-  <button id="tryAgainBtn" style="display:none;">Try Again</button>
+  <!-- Button Container for Swapping -->
+  <div class="button-container">
+    <button id="nextBtn" class="hidden">Next</button>
+    <button id="tryAgainBtn" class="hidden">Try Again</button>
+  </div>
 </div>
 
 <canvas id="confettiCanvas"></canvas>
 
 <footer>
-  © 2024–2025 Created by Peter Gregory
+  © 2024–2026 Created by Peter Gregory
 </footer>
 
 <script src="script.js"></script>
