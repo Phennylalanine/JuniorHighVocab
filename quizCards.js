@@ -6,13 +6,7 @@
 
 // List of available quizzes with their metadata
 const QUIZZES = [
-  {
-    icon: "🏛️",
-    title: "Lesson 7-1 Quiz",
-    jp: "7-1 第1戦",
-    url: "https://phennylalanine.github.io/JuniorHighVocab/Lesson7-1/",
-    levelKey: "lesson7-1sLevelr", // Key used to track progress in localStorage
-  },
+
  {
     icon: "🏃",
     title: "Verbs Part 1",
